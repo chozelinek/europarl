@@ -6,7 +6,8 @@ import datetime
 from lxml import etree, html
 from lxml.html.clean import Cleaner
 import fnmatch  # To match files by pattern
-import regex as re  # Maybe not necessary
+# import regex as re  # Maybe not necessary
+import re
 import time
 
 
