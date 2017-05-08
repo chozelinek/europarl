@@ -8,8 +8,8 @@ This is a toolkit to create a comparable/parallel corpus made of European Parlia
 - `README.md`, this file.
 - `add_metadata.py`, script to add MEPs metadata (CSV) to proceedings (XML).
 - `dates.EN.txt`, one date per line in format YYYY-MM-DD.
-- `getmeps.py`, script to scrap MEPs information.
-- `getproceedings.py`, script to scrap Proceedings of the European Parliament.
+- `get_meps.py`, script to scrap MEPs information.
+- `get_proceedings.py`, script to scrap Proceedings of the European Parliament.
 - `meps_ie.py`, script to extract MEPs metadata from HTML to CSV.
 - `proceedings_txt.py`, script to extract text from HTML proceedings.
 - `proceedings_xml.py`, script to model as XML interventions in HTML proceedings.
@@ -27,7 +27,7 @@ You need `python3` and the following modules:
 
 ### Get proceedings in HTML
 
-We use the script `getproceedings.py` to:
+We use the script `get_proceedings.py` to:
 
 1. generate a range of dates, or read from file,
 1. for each date,
@@ -44,11 +44,11 @@ This is the typical URL for the proceedings of a given day (namely, May 5 2009):
 
 ```shell
 # to get the proceedings for English
-python getproceedings.py -o html/EN -l EN
+python get_proceedings.py -o html/EN -l EN
 # to get the proceedings for Spanish
-python getproceedings.py -o html/ES -l ES -d dates.EN.txt
+python get_proceedings.py -o html/ES -l ES -d dates.EN.txt
 # to get the proceedings for German
-python getproceedings.py -o html/DE -l DE -d dates.EN.txt
+python get_proceedings.py -o html/DE -l DE -d dates.EN.txt
 ```
 
 - `-o` is the path to the output folder to save the downloaded files.
@@ -60,7 +60,7 @@ The European Parliament website maintains a database with all Members of the Eur
 
 ### Get the metadata in HTML
 
-We use the script `getmeps.py` to download as HTML the metadata of all MEPs.
+We use the script `get_meps.py` to download as HTML the metadata of all MEPs.
 
 1. The script retrieves an XML file containing a list of all MEPs full names and unique IDs: <http://www.europarl.europa.eu/meps/en/xml.html?query=full&filter=all&leg=0>;
 1. For each MEP, generate an URL to the actual HTML file containing the metadata: <http://www.europarl.europa.eu/meps/en/33569/33569_history.html>;
@@ -70,7 +70,7 @@ We use the script `getmeps.py` to download as HTML the metadata of all MEPs.
 #### Usage
 
 ```shell
-python getmeps.py -o meps
+python get_meps.py -o meps
 ```
 
 - `-o` is the path to the output folder to save the downloaded files.
