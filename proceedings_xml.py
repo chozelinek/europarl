@@ -9,6 +9,7 @@ import fnmatch  # To match files by pattern
 # import regex as re  # Maybe not necessary
 import re
 import time
+import dateparser
 
 
 def timeit(method):
@@ -44,7 +45,7 @@ class TransformHtmlProceedingsToXml(object):
                    'Member of the Commission',
                    'President-in-Office of the Council',
                    'Vice-President of the Commission',
-                   '[aA]uthor',
+                   '[Aa]uthor',
                    'President of the Commission',
                    'draftsman of the opinion of the Committee on .+',
                    'deputising for the.+?',
@@ -60,8 +61,38 @@ class TransformHtmlProceedingsToXml(object):
                    'general rapporteur',
                    '[cC]hairman of the Committee on .+?',
                    'deputy rapporteur',
+                    ],
+            'ES': [
+                   '[Cc]omisión',
+                   '[Pp]resident[ea] elect[oa] de la Comisión',
+                   '[Pp]resident[ea] designad[oa] de la Comisión',
+                   '[Mm]iembro de la Comisión.+',
+                   '[Pp]resident[ea] en ejercicio del Consejo',
+#                    '[Pp]resident[ea] de la Comisión de .+',
+#                    '[Pp]resident[ea] de la Comisión.+',
+#                    '[Pp]resident[ea] de la Delegación',
+#                    '[Pp]resident[ea] del Banco Central Europeo',
+#                    '[Pp]resident[ea] del BCE',
+#                    '[Pp]resident[ea] del Tribubal de Cuentas',
+#                    '[Pp]resident[ea] de la República.+',
+                   '[Pp]resident[ea] de.+',
+                   '[Cc]onsejo',
+                   '[Vv]icepresident[ea] de la Comisión',
+                   'Alto Representante para la Política Exterior y de Seguridad Común',
+                   'en nombre del .*',
+                   '[aA]utor',
+                   '[Pp]onente.+'
                     ]
                 }
+        self.president_role_locale = {
+            'EN': [
+                   'President'
+                   ],
+            'ES': [
+                   'El Presidente',
+                   'La Presidenta'
+                   ]
+            }
         self.main()
 
     def __str__(self):
@@ -155,6 +186,8 @@ class TransformHtmlProceedingsToXml(object):
     def get_mode(self, intervention):
         if self.language == 'EN':
             in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"in writing?")]]', namespaces=self.ns)
+        if self.language == 'ES':
+            in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"[pP]or escrito")]]', namespaces=self.ns)
         if len(in_writing) > 0:
             output = 'written'
             for writing in in_writing:
@@ -164,7 +197,11 @@ class TransformHtmlProceedingsToXml(object):
         return output
 
     def get_role(self, intervention):
-        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\.\W\s]*({})[\.\W\s]*(\([A-Z][A-Z]\))?[\.\W\s]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
+#         roles_test = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\.\W\s]*({})[\.\W\s]*(\([A-Z][A-Z]\))?[\.\W\s]*$")]]'.format('\w.+?'), namespaces=self.ns)
+#         for rt in roles_test:
+#             print(html.tostring(rt))
+#         roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\.\W\s]*({})[\.\W\s]*(\([A-Z][A-Z]\))?[\.\W\s]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
+        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\-–−\.]*({})[\s\-–−\.]*(\([A-Z][A-Z]\))?[\s\-–−\.]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
         if len(roles) > 0:
             output = roles[0].text.strip()
             for role in roles:
@@ -203,7 +240,8 @@ class TransformHtmlProceedingsToXml(object):
             else:
                 if len(new_paragraphs) == 0:
                     if 'role' in s_intervention.keys():
-                        if s_intervention['role'] == 'President':
+                        president_pattern = '|'.join(self.president_role_locale[self.language])
+                        if re.match(r'{}'.format(president_pattern), s_intervention['role']):
                             output = 'unknown'
                         else:
                             if i_lang is None:
@@ -258,7 +296,7 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'\( +\)', r'', content)
             content = re.sub(r'\( +?', r'(', content)
             content = re.sub(r' +\)', r')', content)
-            content = re.sub(r'^[\s\.–\-−,\)]*\((Madam|Mr President)', r'\1', content)
+#             content = re.sub(r'^[\s\.–\-−,\)]*\((Madam|Mr President)', r'\1', content)
             content = re.sub(r'^,? *Neil,? +\. +– +', r'', content)
             content = re.sub(r'^\(PPE-DE\), +\. +– +', r'', content)
             content = re.sub(r' +', r' ', content)
@@ -268,6 +306,11 @@ class TransformHtmlProceedingsToXml(object):
                 content, s_intervention = self.regextract(content, '^(President-elect of the Commission)\.[\s\-–]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Commission)\.[\s\-–]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Council)\.[\s\-–]+', s_intervention, 'role')
+            if self.language == 'ES':
+                content, s_intervention = self.regextract(content, '^(Presidente designado de la Comisión)[\s\-–\.]+', s_intervention, 'role')
+                content, s_intervention = self.regextract(content, '^(Presidente del Tribunal de Cuentas)[\s\-–\.]+', s_intervention, 'role')
+                content, s_intervention = self.regextract(content, '^(Presidente en ejercicio del Consejo)[\s\-–\.]+', s_intervention, 'role')
+                
             content = re.sub(r'\*{3,}', r'', content)
             new_p['content'] = content
             new_paragraphs.append(new_p)
@@ -277,8 +320,8 @@ class TransformHtmlProceedingsToXml(object):
     def add_root_attributes(self, root, tree, infile):
         root.attrib['id'] = os.path.splitext(os.path.basename(infile))[0]
         root.attrib['lang'] = self.language
-        date_string = re.match(r'^.+?, (\d.+?) - (.+)$', tree.xpath('//td[@class="doc_title" and @align="left" and @valign="top"]')[0].text)
-        date = datetime.datetime.strptime(date_string.group(1), '%d %B %Y').date()
+        date_string = re.match(r'^(.+?,? \d.+?) - (.+)$', tree.xpath('//td[@class="doc_title" and @align="left" and @valign="top"]')[0].text)
+        date = dateparser.parse(date_string.group(1)).date()
         place = date_string.group(2)
         root.attrib['date'] = str(date)
         root.attrib['place'] = place
@@ -329,10 +372,16 @@ class TransformHtmlProceedingsToXml(object):
                     s_intervention['is_mep'] = self.get_is_mep(s_intervention['speaker_id'])
                     s_intervention['mode'] = self.get_mode(intervention)
                     speaker_name = self.get_speaker_name(intervention)
-                    if speaker_name == "President":
-                        s_intervention['role'] = 'President'
-                    else:
-                        s_intervention['name'] = speaker_name
+                    if self.language == 'EN':
+                        if speaker_name == "President":
+                            s_intervention['role'] = 'President'
+                        else:
+                            s_intervention['name'] = speaker_name
+                    elif self.language == 'ES':
+                        if speaker_name == "El Presidente" or speaker_name == "La Presidenta":
+                            s_intervention['role'] = speaker_name
+                        else:
+                            s_intervention['name'] = speaker_name
                     role, i_lang = self.get_role(intervention)
                     if role is not None:
                         s_intervention['role'] = role
