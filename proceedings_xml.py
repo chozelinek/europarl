@@ -63,11 +63,18 @@ class TransformHtmlProceedingsToXml(object):
                    'deputy rapporteur',
                     ],
             'ES': [
+                   'Alto Representante para la Política Exterior y de Seguridad Común',
+                   '[aA]utor',
                    '[Cc]omisión',
+                   '[Cc]onsejo',
+                   'en nombre del .*',
+                   '[Mm]iembro de la Comisión.+'
+                   '[Pp]onente.+',
                    '[Pp]resident[ea] elect[oa] de la Comisión',
                    '[Pp]resident[ea] designad[oa] de la Comisión',
-                   '[Mm]iembro de la Comisión.+',
-                   '[Pp]resident[ea] en ejercicio del Consejo',
+                   '[Pp]resident[ea] en .+',
+                   '[Pp]resident[ea] de.+',
+#                    '[Pp]resident[ea] en ejercicio del Consejo',
 #                    '[Pp]resident[ea] de la Comisión de .+',
 #                    '[Pp]resident[ea] de la Comisión.+',
 #                    '[Pp]resident[ea] de la Delegación',
@@ -310,6 +317,7 @@ class TransformHtmlProceedingsToXml(object):
                 content, s_intervention = self.regextract(content, '^(Presidente designado de la Comisión)[\s\-–\.]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Presidente del Tribunal de Cuentas)[\s\-–\.]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Presidente en ejercicio del Consejo)[\s\-–\.]+', s_intervention, 'role')
+                content, s_intervention = self.regextract(content, '^(Presidente de la Comisión de Asuntos Económicos y Monetarios)[\s\-–\.]+', s_intervention, 'role')
                 
             content = re.sub(r'\*{3,}', r'', content)
             new_p['content'] = content
