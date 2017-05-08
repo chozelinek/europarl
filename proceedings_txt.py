@@ -148,29 +148,6 @@ class TransformHtmlProceedingsToTxt(object):
             required=True,
             help="path to the output directory.")
         parser.add_argument(
-            "-l", "--language",
-            required=True,
-            choices=['EN', 'ES', 'DE', 'FR', 'IT'],
-            help="version to be downloaded.")
-        parser.add_argument(
-            '-s', "--startdate",
-            required=False,
-            type=self.valid_date,
-            default=datetime.datetime(1999, 7, 20),
-            help="The Start Date - format YYYY-MM-DD")
-        parser.add_argument(
-            '-e', "--enddate",
-            required=False,
-            type=self.valid_date,
-            default=datetime.datetime(2012, 11, 22),
-            help="The Start Date - format YYYY-MM-DD")
-        parser.add_argument(
-            '-d', "--dates",
-            required=False,
-            help=("path to file containing one date per line" +
-                  "in format YYYY-MM-DD.")
-        )
-        parser.add_argument(
             '-p', "--pattern",
             required=False,
             default="*.html",
