@@ -4,14 +4,24 @@ This is a toolkit to create a comparable/parallel corpus made of European Parlia
 
 ## Contents
 
+- `LICENSE`, MIT license.
 - `README.md`, this file.
+- `add_metadata.py`, script to add MEPs metadata (CSV) to proceedings (XML).
 - `dates.EN.txt`, one date per line in format YYYY-MM-DD.
 - `getmeps.py`, script to scrap MEPs information.
 - `getproceedings.py`, script to scrap Proceedings of the European Parliament.
+- `meps_ie.py`, script to extract MEPs metadata from HTML to CSV.
+- `proceedings_txt.py`, script to extract text from HTML proceedings.
+- `proceedings_xml.py`, script to model as XML interventions in HTML proceedings.
 
 ## Requirements
 
-You need `python3` and the following modules: `lxml` and `requests`.
+You need `python3` and the following modules:
+
+- `lxml`
+- `requests`
+- `pandas`
+- `dateparser`
 
 ## Scrapping European Parliament's proceedings
 
@@ -76,3 +86,35 @@ python getmeps.py -o meps
 ## On web scrapping with Python
 
 <http://docs.python-guide.org/en/latest/scenarios/scrape/>
+
+## Extracting text from HTML proceedings
+
+### Usage
+
+```shell
+python proceedings_txt.py -i html/EN -o txt/EN
+```
+
+## Transforming HTML proceedings into XML
+
+### Usage
+
+```shell
+python proceedings_xml.py -i html/EN -o xml/EN/ -l EN
+```
+
+## Extracting MEPs information from HTML
+
+### Usage
+
+```shell
+python meps_ie.py -i html/MEPS/ -o xml/MEPS/
+```
+
+## Adding MEPs' metadata to XML proceedings
+
+### Usage
+
+```shell
+python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/EN/ -p "*.xml" -o xml_metadata/EN
+```
