@@ -5,6 +5,7 @@ import argparse
 import requests
 from lxml import etree
 from io import BytesIO
+import fnmatch
 
 
 class GetMeps(object):
@@ -12,6 +13,7 @@ class GetMeps(object):
 
     def __init__(self):
         self.cli()
+        self.n_meps = 0
         self.main()
 
     def __str__(self):
@@ -20,25 +22,60 @@ class GetMeps(object):
             )
         return message
 
+    def get_files(self, directory, fileclue):
+        """Get all files in a directory matching a pattern.
+
+        Keyword arguments:
+        directory -- a string for the input folder path
+        fileclue -- a string as glob pattern
+        """
+        matches = []
+        for root, dirnames, filenames in os.walk(directory):
+            for filename in fnmatch.filter(filenames, fileclue):
+                matches.append(os.path.join(root, filename))
+        return matches
+
     def main(self):
-        all_meps_url = ("http://www.europarl.europa.eu/meps/en/xml.html" +
-                        "?query=full&filter=all&leg=0")
-        all_meps_r = requests.get(all_meps_url)
-        all_meps_xml = all_meps_r.content
-        all_meps = etree.parse(BytesIO(all_meps_xml))
-        self.n_meps = 0
+        if self.fromfile is False:
+            all_meps_url = ("http://www.europarl.europa.eu/meps/en/xml.html" +
+                            "?query=full&filter=all&leg=0")
+            all_meps_r = requests.get(all_meps_url)
+            all_meps_xml = all_meps_r.content
+            all_meps = etree.parse(BytesIO(all_meps_xml))
+            all_mep_ids = all_meps.xpath('//id/text()')
+            if self.resume is True:
+                already_downloaded = self.get_files(self.outdir, "*.html")
+                already_downloaded = [os.path.splitext(os.path.basename(x))[0] for x in already_downloaded]
+                remaining_ids = set(all_mep_ids) - set(already_downloaded)
+                ids_to_download = set(remaining_ids)
+            else:
+                remaining_ids = set(all_mep_ids)
+                ids_to_download = set(remaining_ids)
+        elif self.fromfile is not False:
+            with open(self.fromfile, 'r', encoding='utf-8') as mep_ids_file:
+                all_mep_ids = mep_ids_file.read()
+            all_mep_ids = all_mep_ids.strip()
+            remaining_ids = set(all_mep_ids.split('\n'))
+            ids_to_download = set(remaining_ids)
         url_pattern = ("http://www.europarl.europa.eu/meps/en/" +
                        "{}/{}_history.html")
-        for mep in all_meps.xpath('//mep/id/text()'):
-            url = url_pattern.format(mep, mep)
+        for id in ids_to_download:
+            with open('getmeps-log.txt', 'w', encoding='utf-8') as logfile:
+                logfile.write("\n".join(remaining_ids))
+            print('Remaining\t', len(remaining_ids))
+            print('Trying\t', id)
+            url = url_pattern.format(id, id)
             r = requests.get(url)
             if r.status_code == requests.codes.ok:
-                print(mep)
-                ofname = "{}.html".format(mep)
+                print('Success\t', id)
+                ofname = "{}.html".format(id)
                 ofpath = os.path.join(self.outdir, ofname)
                 with open(ofpath, mode='wb') as ohtml:
                     ohtml.write(r.content)
                 self.n_meps += 1
+                remaining_ids.remove(id)
+            else:
+                print('Fail\t{}'.format(id))
         pass
 
     def cli(self):
@@ -48,8 +85,20 @@ class GetMeps(object):
             "-o", "--output",
             required=True,
             help="path to the output directory.")
+        parser.add_argument(
+            "-f", "--fromfile",
+            required=False,
+            default=False,
+            help="path to a file containing a list of IDs to download.")
+        parser.add_argument(
+            "-r", "--resume",
+            required=False,
+            action="store_true",
+            help="resume downloads from already downloaded files in output folder.")
         args = parser.parse_args()
         self.outdir = args.output
+        self.fromfile = args.fromfile
+        self.resume = args.resume
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
         pass
