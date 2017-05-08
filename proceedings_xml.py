@@ -82,14 +82,13 @@ class TransformHtmlProceedingsToXml(object):
 #                    '[Pp]resident[ea] del BCE',
 #                    '[Pp]resident[ea] del Tribubal de Cuentas',
 #                    '[Pp]resident[ea] de la República.+',
-                   '[Pp]resident[ea] de.+',
-                   '[Cc]onsejo',
                    '[Vv]icepresident[ea] de la Comisión',
-                   'Alto Representante para la Política Exterior y de Seguridad Común',
-                   'en nombre del .*',
-                   '[aA]utor',
-                   '[Pp]onente.+'
-                    ]
+                    ],
+            'DE': [
+                   'Präsident(in)? de.+',
+                   'Kommission',
+                   'Rat'
+                   ]
                 }
         self.president_role_locale = {
             'EN': [
@@ -98,7 +97,10 @@ class TransformHtmlProceedingsToXml(object):
             'ES': [
                    'El Presidente',
                    'La Presidenta'
-                   ]
+                   ],
+            'DE': [
+                   '(Der )?Präsident',
+                   '(Die )?Präsidentin']
             }
         self.main()
 
@@ -193,8 +195,10 @@ class TransformHtmlProceedingsToXml(object):
     def get_mode(self, intervention):
         if self.language == 'EN':
             in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"in writing?")]]', namespaces=self.ns)
-        if self.language == 'ES':
+        elif self.language == 'ES':
             in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"[pP]or escrito")]]', namespaces=self.ns)
+        elif self.language == 'DE':
+            in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"schriftlich")]]', namespaces=self.ns)
         if len(in_writing) > 0:
             output = 'written'
             for writing in in_writing:
@@ -380,13 +384,19 @@ class TransformHtmlProceedingsToXml(object):
                     s_intervention['is_mep'] = self.get_is_mep(s_intervention['speaker_id'])
                     s_intervention['mode'] = self.get_mode(intervention)
                     speaker_name = self.get_speaker_name(intervention)
+                    president_pattern = '|'.join(self.president_role_locale[self.language])
                     if self.language == 'EN':
-                        if speaker_name == "President":
+                        if re.match(r'{}'.format(president_pattern), speaker_name):
                             s_intervention['role'] = 'President'
                         else:
                             s_intervention['name'] = speaker_name
                     elif self.language == 'ES':
-                        if speaker_name == "El Presidente" or speaker_name == "La Presidenta":
+                        if re.match(r'{}'.format(president_pattern), speaker_name):
+                            s_intervention['role'] = speaker_name
+                        else:
+                            s_intervention['name'] = speaker_name
+                    elif self.language == 'DE':
+                        if re.match(r'{}'.format(president_pattern), speaker_name):
                             s_intervention['role'] = speaker_name
                         else:
                             s_intervention['name'] = speaker_name
