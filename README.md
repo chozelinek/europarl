@@ -116,5 +116,10 @@ python meps_ie.py -i html/MEPS/ -o xml/MEPS/
 ### Usage
 
 ```shell
+# EN
 python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/EN/ -p "*.xml" -o xml_metadata/EN
+# ES
+python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/ES/ -p "*.xml" -o xml_metadata/ES
+# DE
+python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/DE/ -p "*.xml" -o xml_metadata/DE
 ```
