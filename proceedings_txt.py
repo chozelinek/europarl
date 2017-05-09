@@ -4,7 +4,7 @@ import os
 import argparse
 import datetime
 from lxml import etree
-import fnmatch  # To match files by pattern
+import fnmatch
 import re
 
 
@@ -17,9 +17,8 @@ class TransformHtmlProceedingsToTxt(object):
         self.main()
 
     def __str__(self):
-        message = "{} EuroParl's {} proceedings transformed!".format(
-            str(self.n_proceedings),
-            self.language)
+        message = "{} EuroParl's proceedings transformed!".format(
+            str(self.n_proceedings))
         return message
     
     def get_files(self, directory, fileclue):
@@ -63,8 +62,6 @@ class TransformHtmlProceedingsToTxt(object):
         tree_as_string -- tree as string
         infile -- path to the input file as string
         """
-#         if not os.path.exists(self.outdir):
-#             os.makedirs(self.outdir)
         outpath = os.path.join(  # output path
             self.outdir,
             os.path.splitext(os.path.basename(infile))[0]+'.'+'txt')  # depending on the output formats able to choose output extension
@@ -92,47 +89,6 @@ class TransformHtmlProceedingsToTxt(object):
             all_text = re.sub(r'\[\n', r'[', all_text)
             all_text = re.sub(r'\n\]', r']', all_text)
             self.serialize(all_text, infile)
-            
-#         url_pattern = ("http://www.europarl.europa.eu/sides/getDoc.do?pubRef" +
-#                        "=-//EP//TEXT+CRE+{}+ITEMS+DOC+XML+V0//{}&language={}")
-#         if self.dates is None:
-#             step = datetime.timedelta(days=1)
-#             dates = []
-#             while self.start_date <= self.end_date:
-#                 date_as_string = self.start_date.strftime('%Y%m%d')
-#                 url = url_pattern.format(
-#                     date_as_string,
-#                     self.language,
-#                     self.language)
-#                 r = requests.get(url)
-#                 if r.status_code == requests.codes.ok:
-#                     print(date_as_string)
-#                     dates.append(self.start_date.strftime('%Y-%m-%d'))
-#                     ofname = "{}.{}.html".format(date_as_string, self.language)
-#                     ofpath = os.path.join(self.outdir, ofname)
-#                     with open(ofpath, mode='wb') as ohtml:
-#                         ohtml.write(r.content)
-#                     self.n_proceedings += 1
-#                 self.start_date += step
-#             dates = '\n'.join(dates)
-#             with open('dates.{}.txt'.format(self.language), mode='w',
-#                       encoding='utf-8') as fdates:
-#                 fdates.write(dates)
-#         else:
-#             dates = self.parse_dates()
-#             for d in dates:
-#                 date_as_string = d.strftime('%Y%m%d')
-#                 url = url_pattern.format(
-#                     date_as_string,
-#                     self.language,
-#                     self.language)
-#                 r = requests.get(url)
-#                 if r.status_code == requests.codes.ok:
-#                     print(date_as_string)
-#                     ofname = "{}.{}.html".format(date_as_string, self.language)
-#                     ofpath = os.path.join(self.outdir, ofname)
-#                     with open(ofpath, mode='wb') as ohtml:
-#                         ohtml.write(r.content)
             self.n_proceedings += 1
         pass
 
@@ -157,12 +113,7 @@ class TransformHtmlProceedingsToTxt(object):
         self.outdir = args.output
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
-        self.language = args.language
-        self.start_date = args.startdate
-        self.end_date = args.enddate
-        self.dates = args.dates
         self.pattern = args.pattern
-        print(self.pattern)
         pass
 
 
