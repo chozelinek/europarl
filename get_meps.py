@@ -60,6 +60,7 @@ class GetMeps(object):
         url_pattern = ("http://www.europarl.europa.eu/meps/en/" +
                        "{}/{}_history.html")
         for id in ids_to_download:
+            print(id)
             url = url_pattern.format(id, id)
             r = requests.get(url)
             if r.status_code == requests.codes.ok:
