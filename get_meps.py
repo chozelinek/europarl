@@ -60,22 +60,15 @@ class GetMeps(object):
         url_pattern = ("http://www.europarl.europa.eu/meps/en/" +
                        "{}/{}_history.html")
         for id in ids_to_download:
-            with open('getmeps-log.txt', 'w', encoding='utf-8') as logfile:
-                logfile.write("\n".join(remaining_ids))
-            print('Remaining\t', len(remaining_ids))
-            print('Trying\t', id)
             url = url_pattern.format(id, id)
             r = requests.get(url)
             if r.status_code == requests.codes.ok:
-                print('Success\t', id)
                 ofname = "{}.html".format(id)
                 ofpath = os.path.join(self.outdir, ofname)
                 with open(ofpath, mode='wb') as ohtml:
                     ohtml.write(r.content)
                 self.n_meps += 1
                 remaining_ids.remove(id)
-            else:
-                print('Fail\t{}'.format(id))
         pass
 
     def cli(self):
