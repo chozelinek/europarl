@@ -175,6 +175,7 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = re.sub(r',  – ', r'', speaker_name)
         speaker_name = re.sub(r' . – \(', r'', speaker_name)
         speaker_name = re.sub(r'.–', r'', speaker_name)
+        speaker_name = re.sub(r'^(.+?). ­$', r'\1', speaker_name)
         speaker_name = speaker_name.strip()
         return speaker_name
 
