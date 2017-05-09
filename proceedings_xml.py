@@ -6,8 +6,8 @@ import datetime
 from lxml import etree, html
 from lxml.html.clean import Cleaner
 import fnmatch  # To match files by pattern
-# import regex as re  # Maybe not necessary
-import re
+import regex as re  # Maybe not necessary
+# import re
 import time
 import dateparser
 
@@ -412,6 +412,8 @@ class TransformHtmlProceedingsToXml(object):
                     role, i_lang = self.get_role(intervention)
                     if role is not None:
                         s_intervention['role'] = role
+                    if 'role' in s_intervention:
+                        s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
                     s_intervention = self.get_paragraphs(intervention, s_intervention, i_lang)
                     self.intervention_to_xml(x_section, s_intervention)
             self.serialize(infile, root)
