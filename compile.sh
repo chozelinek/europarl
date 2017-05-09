@@ -7,17 +7,17 @@ echo "Compiling EuroParl corpus in '$DATA' ...."
 ## Download proceedings in HTML
 ## English
 echo "Downloading English proceedings ...."
-python get_proceedings.py -o $DATA/html/EN -l EN -d dates.EN.txt
+python get_proceedings.py -o $DATA/html/EN -l EN -d dates.txt
 # Spanish
 echo "Downloading Spanish proceedings ...."
-python get_proceedings.py -o $DATA/html/ES -l ES -d dates.EN.txt
+python get_proceedings.py -o $DATA/html/ES -l ES -d dates.txt
 # German
 echo "Downloading German proceedings ...."
-python get_proceedings.py -o $DATA/html/DE -l DE -d dates.EN.txt
+python get_proceedings.py -o $DATA/html/DE -l DE -d dates.txt
 
 ## Download MEPs metadata in HTML
 echo "Downloading MEPS' metadata ...."
-python get_meps.py -o $DATA/meps
+python get_meps.py -o $DATA/html/MEPS
 
 ## Get proceedings in TXT
 ## English
