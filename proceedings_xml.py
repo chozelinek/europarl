@@ -85,9 +85,17 @@ class TransformHtmlProceedingsToXml(object):
                    '[Vv]icepresident[ea] de la Comisión',
                     ],
             'DE': [
-                   'Präsident(in)? de.+',
-                   'Kommission',
-                   'Rat'
+#                    '[Aa]mtierender? Ratspräsident(in)?'
+#                     'Präsidentin de.+',
+#                     'Präsident de.+',
+                    'Präsident(in)? de.+',
+                    'Kommission',
+                    'Rat',
+#                    'Berichterstatter(in)?',
+#                    'D(er|ie) Präsident(in)?',
+#                    'Vizepräsident(in)? de.+',
+#                    'Mitglied der Kommission',
+#                    'im Namen der .*'
                    ]
                 }
         self.president_role_locale = {
