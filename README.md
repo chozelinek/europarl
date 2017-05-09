@@ -7,6 +7,7 @@ This is a toolkit to create a comparable/parallel corpus made of European Parlia
 - `LICENSE`, MIT license.
 - `README.md`, this file.
 - `add_metadata.py`, script to add MEPs metadata (CSV) to proceedings (XML).
+- `compile.sh`, script to run the whole pipeline to compile the EuroParl corpus.
 - `dates.EN.txt`, one date per line in format YYYY-MM-DD.
 - `get_meps.py`, script to scrap MEPs information.
 - `get_proceedings.py`, script to scrap Proceedings of the European Parliament.
@@ -43,16 +44,13 @@ This is the typical URL for the proceedings of a given day (namely, May 5 2009):
 #### Usage
 
 ```shell
-# to get the proceedings for English
-python get_proceedings.py -o html/EN -l EN
-# to get the proceedings for Spanish
-python get_proceedings.py -o html/ES -l ES -d dates.EN.txt
-# to get the proceedings for German
-python get_proceedings.py -o html/DE -l DE -d dates.EN.txt
+# get proceedings for English with defaults
+python get_proceedings.py -o /path/to/output/dir -l EN
+# get proceedings for Spanish using a list of dates
+python get_proceedings.py -o /path/to/output/dir -l ES -d dates.txt
+# get proceedings for German using a range of dates between two values
+python get_proceedings.py -o /path/to/output/dir -l DE -s 2000-01-01 -e 2004-07-01
 ```
-
-- `-o` is the path to the output folder to save the downloaded files.
-- `-d` is the path to a plain text file, with one date per line in format YYYY-MM-DD.
 
 ## Scrapping MEPs information
 
@@ -70,10 +68,8 @@ We use the script `get_meps.py` to download as HTML the metadata of all MEPs.
 #### Usage
 
 ```shell
-python get_meps.py -o meps
+python get_meps.py -o /path/to/output/dir
 ```
-
-- `-o` is the path to the output folder to save the downloaded files.
 
 #### Some notes on querying the database
 
@@ -92,7 +88,7 @@ python get_meps.py -o meps
 ### Usage
 
 ```shell
-python proceedings_txt.py -i html/EN -o txt/EN
+python proceedings_txt.py -i /path/to/html -o /path/to/output
 ```
 
 ## Transforming HTML proceedings into XML
@@ -100,7 +96,7 @@ python proceedings_txt.py -i html/EN -o txt/EN
 ### Usage
 
 ```shell
-python proceedings_xml.py -i html/EN -o xml/EN/ -l EN
+python proceedings_xml.py -i /path/to/html -o /path/to/xml -l EN
 ```
 
 ## Extracting MEPs information from HTML
@@ -108,7 +104,7 @@ python proceedings_xml.py -i html/EN -o xml/EN/ -l EN
 ### Usage
 
 ```shell
-python meps_ie.py -i html/MEPS/ -o xml/MEPS/
+python meps_ie.py -i /path/to/metadata/dir -o /path/to/output/dir
 ```
 
 ## Adding MEPs' metadata to XML proceedings
@@ -116,10 +112,5 @@ python meps_ie.py -i html/MEPS/ -o xml/MEPS/
 ### Usage
 
 ```shell
-# EN
-python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/EN/ -p "*.xml" -o xml_metadata/EN
-# ES
-python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/ES/ -p "*.xml" -o xml_metadata/ES
-# DE
-python add_metadata.py -m xml/MEPS/meps.csv -n xml/MEPS/national_parties.csv -g xml/MEPS/political_groups.csv -x xml/DE/ -p "*.xml" -o xml_metadata/DE
+python add_metadata.py -m /path/to/meps.csv -n /path/to/national_parties.csv -g /path/to/political_groups.csv -x /path/to/source/xml/dir -p "*.xml" -o /path/to/output/xml/dir
 ```
