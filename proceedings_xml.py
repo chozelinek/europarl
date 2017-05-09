@@ -91,7 +91,7 @@ class TransformHtmlProceedingsToXml(object):
                     'Präsident(in)? de.+',
                     'Kommission',
                     'Rat',
-#                    'Berichterstatter(in)?',
+                    'Berichterstatter(in)?',
 #                    'D(er|ie) Präsident(in)?',
 #                    'Vizepräsident(in)? de.+',
 #                    'Mitglied der Kommission',
