@@ -158,33 +158,27 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = intervention.xpath('.//span[@class="doc_subtitle_level1_bis"]//text()')
         speaker_name = ''.join(speaker_name)
         speaker_name = re.sub(r'\n', r'', speaker_name)
+        speaker_name = re.sub(r'\&amp;', r'&', speaker_name)
+        speaker_name = re.sub(r'\([\p{Lu}\&/\-–]+\)', r'', speaker_name)
+        speaker_name = re.sub(r'\(\p{Lu}\p{Ll}+/ALE\)', r'', speaker_name)
         speaker_name = re.sub(r' +', r' ', speaker_name)
-        speaker_name = re.sub(r'\(.+?\)', r'', speaker_name)
-        speaker_name = re.sub(r' +\. *$', r'', speaker_name)
-        speaker_name = re.sub(r'(\w{2,}) +\. *$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\. *$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,}) *\.? *[–—–−-] *$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,}) \.$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\.$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\. +$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\. $', r'\1', speaker_name)
-        speaker_name = re.sub(r', *$', r'', speaker_name)
-        speaker_name = re.sub(r', $', r'', speaker_name)
-        speaker_name = re.sub(r', . - $', r'', speaker_name)
-        speaker_name = re.sub(r', . – $', r'', speaker_name)
-        speaker_name = re.sub(r'[  ]+\.$', r'', speaker_name)
-        speaker_name = re.sub(r' . –$', r'', speaker_name)
-        speaker_name = re.sub(r', – ', r'', speaker_name)
-        speaker_name = re.sub(r' , –', r'', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\. –$', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\w{2,})\. – $', r'\1', speaker_name)
-        speaker_name = re.sub(r' –.', r'', speaker_name)
-        speaker_name = re.sub(r'. – –', r'', speaker_name)
-        speaker_name = re.sub(r',  – ', r'', speaker_name)
-        speaker_name = re.sub(r' . – \(', r'', speaker_name)
-        speaker_name = re.sub(r'.–', r'', speaker_name)
-        speaker_name = re.sub(r'^(.+?). ­$', r'\1', speaker_name)
-        speaker_name = speaker_name.strip()
+        speaker_name = re.sub(r'\A[\xad\s\.–\-−,\)]+', r'', speaker_name)
+        speaker_name = re.sub(r'([ \.]\p{LU}\.)[\xad\s\.–\-−,:]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r'(\p{L}\p{L})[\xad\s\.–\-−,\):]+\Z', r'\1', speaker_name)
+#         speaker_name_b = speaker_name
+        speaker_name = re.sub(r'(\p{L}\p{L}) . —\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r'(Figel’)[\xad\s\.–\-−,\):]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r' \.\Z', r'', speaker_name)
+        speaker_name = re.sub(r'\([\p{Lu}/\xad\-–]+\Z', r'', speaker_name)
+        speaker_name = re.sub(r' +\Z', r'', speaker_name)
+        speaker_name = re.sub(r', +,', r',', speaker_name)
+        speaker_name = re.sub(r' +, +', r',', speaker_name)
+        speaker_name = re.sub(r',+', r',', speaker_name)
+        speaker_name = re.sub(r' *,(\S)', r', \1', speaker_name)
+        speaker_name = re.sub(r',\Z', r'', speaker_name)
+        speaker_name = re.sub(r'(Bartholomeos I)\.', r'\1', speaker_name)
+        speaker_name = re.sub(r', im Namen der Delegation der britischen Konservativen', r'', speaker_name)
+#         print(speaker_name_b,'||',speaker_name)
         return speaker_name
 
     def get_speaker_id(self, intervention):
@@ -221,7 +215,7 @@ class TransformHtmlProceedingsToXml(object):
 #         for rt in roles_test:
 #             print(html.tostring(rt))
 #         roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\.\W\s]*({})[\.\W\s]*(\([A-Z][A-Z]\))?[\.\W\s]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
-        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\-–−\.]*({})[\s\-–−\.]*(\([A-Z][A-Z]\))?[\s\-–−\.]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
+        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\xad\-–−\.]*({})[\s\xad\-–−\.]*(\([A-Z][A-Z]\))?[\s\xad\-–−\.]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
         if len(roles) > 0:
             output = roles[0].text.strip()
             for role in roles:
@@ -261,7 +255,7 @@ class TransformHtmlProceedingsToXml(object):
                 if len(new_paragraphs) == 0:
                     if 'role' in s_intervention.keys():
                         president_pattern = '|'.join(self.president_role_locale[self.language])
-                        if re.match(r'{}'.format(president_pattern), s_intervention['role']):
+                        if re.match(r'{}\Z'.format(president_pattern), s_intervention['role']):
                             output = 'unknown'
                         else:
                             if i_lang is None:
@@ -395,17 +389,17 @@ class TransformHtmlProceedingsToXml(object):
                     speaker_name = self.get_speaker_name(intervention)
                     president_pattern = '|'.join(self.president_role_locale[self.language])
                     if self.language == 'EN':
-                        if re.match(r'{}'.format(president_pattern), speaker_name):
+                        if re.match(r'{}\Z'.format(president_pattern), speaker_name):
                             s_intervention['role'] = 'President'
                         else:
                             s_intervention['name'] = speaker_name
                     elif self.language == 'ES':
-                        if re.match(r'{}'.format(president_pattern), speaker_name):
+                        if re.match(r'{}\Z'.format(president_pattern), speaker_name):
                             s_intervention['role'] = speaker_name
                         else:
                             s_intervention['name'] = speaker_name
                     elif self.language == 'DE':
-                        if re.match(r'{}'.format(president_pattern), speaker_name):
+                        if re.match(r'{}\Z'.format(president_pattern), speaker_name):
                             s_intervention['role'] = speaker_name
                         else:
                             s_intervention['name'] = speaker_name
