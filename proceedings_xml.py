@@ -126,12 +126,12 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = re.sub(r'\([\p{Lu}\&/\-–\s]+\)', r'', speaker_name)
         speaker_name = re.sub(r'\(\p{Lu}\p{Ll}+[/-]ALE\)', r'', speaker_name)
         speaker_name = re.sub(r' +', r' ', speaker_name)
-        speaker_name = re.sub(r'\A[\xad\s\.–\-−,\)]+', r'', speaker_name)
-        speaker_name = re.sub(r'([ \.]\p{LU}\.)[\xad\s\.–\-−,:]+\Z', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\p{L}\p{L})[\xad\s\.–\-−,\):]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r'\A[\xad\s\.—–\-−,\)]+', r'', speaker_name)
+        speaker_name = re.sub(r'([ \.]\p{LU}\.)[\xad\s\.—–\-−,:]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r'(\p{L}\p{L})[\xad\s\.—–\-−,\):]+\Z', r'\1', speaker_name)
 #         speaker_name_b = speaker_name
         speaker_name = re.sub(r'(\p{L}\p{L}) . —\Z', r'\1', speaker_name)
-        speaker_name = re.sub(r'(Figel’)[\xad\s\.–\-−,\):]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(r'(Figel’)[\xad\s\.—–\-−,\):]+\Z', r'\1', speaker_name)
         speaker_name = re.sub(r' \.\Z', r'', speaker_name)
         speaker_name = re.sub(r'\([\p{Lu}/\xad\-–]+\Z', r'', speaker_name)
         speaker_name = re.sub(r' +\Z', r'', speaker_name)
@@ -170,7 +170,7 @@ class TransformHtmlProceedingsToXml(object):
         return output
 
     def get_role(self, intervention):
-        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\xad\-–−\.]*(?:{})[\s\xad\-–−\.]*(?:\([A-Z][A-Z]\))?[\s\xad\-–−\.]*$", "m")]]'.format('|'.join(self.loc['roles'])), namespaces=self.ns)
+        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\xad\-–−—\.]*(?:{})[\s\xad\-–−\.]*(?:\([A-Z][A-Z]\))?[\s\xad\-–−—\.]*$", "m")]]'.format('|'.join(self.loc['roles'])), namespaces=self.ns)
         if len(roles) > 0:
             output = []
             for role in roles:
@@ -190,14 +190,14 @@ class TransformHtmlProceedingsToXml(object):
             output = None
             i_lang = None
         if output is not None:
-            print('E: ', output)
+#             print('E: ', output)
             output = " ".join(output)
             output = re.sub(r'\n', r' ', output)
             output = re.sub(r' +', r' ', output)
             output = re.sub(r'\([\p{Lu}\&/\-–]+\)', r'', output)
-            output = re.sub(r'(\p{Ll})[\s\.\xad–\-−,\)]+\Z', r'\1', output)
-            output = re.sub(r'\A[\xad\s\.–\-−,\)]+', r'', output)
-            output = re.sub(r'[\xad\s\.–\-−,\)]+\Z', r'', output)
+            output = re.sub(r'(\p{Ll})[\s\.\xad–\-−—,\)]+\Z', r'\1', output)
+            output = re.sub(r'\A[\xad\s\.—–\-−,\)\(]+', r'', output)
+            output = re.sub(r'[\xad\s\.—–\-−,\)]+\Z', r'', output)
 #             output = re.sub(r'(V\p{Ll}+/ALE)[\s\.\xad–\-−,\)]+', r'', output)
 #             output = re.sub(r'(V\p{Ll}+/ALE|[\p{Lu}\&/\-–]+)[\s\.\xad–\-−,\)]+', r'\1', output)
         return output, i_lang
@@ -271,13 +271,13 @@ class TransformHtmlProceedingsToXml(object):
             content = p.text_content()
             content = content.strip()
             content = re.sub(r'\t', r' ', content)
-            content = re.sub(r'\xad', r'-', content)
+            content = re.sub(r'\xad', r'-', content)  # revise
             content = re.sub(r'\xa0', r' ', content)
             content = re.sub(r' +', r' ', content)
             content = re.sub(r'\. \. \.', r'...', content)
             content = re.sub(r'\.{3,}', r'…', content)
             content = re.sub(r'…\.\.', r'…', content)
-            content = re.sub(r'^([\s\.–\-−,\)]+)', r'', content)
+            content = re.sub(r'^([\s\.—–\-−,\)]+)', r'', content)
             content = re.sub(r'([^\.])(…)', r'\1 \2', content)
             content = re.sub(r'\.…', r' …', content)
             content = re.sub(r'\( ?… ?\)', r'(…)', content)
@@ -293,7 +293,7 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'^\(Verts/ALE\), +\. +– +', r'', content)
             content = re.sub(r'\A\([\p{Lu}\&/\-–]+\)', r'', content)
             content = re.sub(r' +', r' ', content)
-            content = re.sub(r'\A([\s\.–\-−,\)]+)', r'', content)
+            content = re.sub(r'\A([\s\.—–\-−,\)]+)', r'', content)
             content = re.sub(r'^\((Madam President)', r'\1', content)
             content = re.sub(r'^\((Mr President)', r'\1', content)
             if self.language == 'EN':
@@ -380,9 +380,9 @@ class TransformHtmlProceedingsToXml(object):
                     role, i_lang = self.get_role(intervention)
                     if role is not None:
                         s_intervention['role'] = role
-                    if 'role' in s_intervention:
-#                         s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
-                        print('F: ', s_intervention['role'])
+#                     if 'role' in s_intervention:
+# #                         s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
+#                         print('F: ', s_intervention['role'])
                     s_intervention = self.get_paragraphs(intervention, s_intervention, i_lang)
                     self.intervention_to_xml(x_section, s_intervention)
             self.serialize(infile, root)
