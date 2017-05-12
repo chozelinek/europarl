@@ -32,7 +32,6 @@ class TransformHtmlProceedingsToXml(object):
     @timeit
     def __init__(self):
         self.cli()
-        # import json
         self.infiles = self.get_files(self.indir, self.pattern)
         self.n_proceedings = 0
         self.ns = {'re': 'http://exslt.org/regular-expressions'}
@@ -64,8 +63,6 @@ class TransformHtmlProceedingsToXml(object):
             "FI",
             "SV",
             ]
-#         self.lang_pattern = re.compile(r'.*(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK).*')
-#         self.lang_pattern_in_text = re.compile(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK)\)')
         self.main()
 
     def __str__(self):
@@ -198,8 +195,6 @@ class TransformHtmlProceedingsToXml(object):
             output = re.sub(r'(\p{Ll})[\s\.\xad–\-−—,\)]+\Z', r'\1', output)
             output = re.sub(r'\A[\xad\s\.—–\-−,\)\(]+', r'', output)
             output = re.sub(r'[\xad\s\.—–\-−,\)]+\Z', r'', output)
-#             output = re.sub(r'(V\p{Ll}+/ALE)[\s\.\xad–\-−,\)]+', r'', output)
-#             output = re.sub(r'(V\p{Ll}+/ALE|[\p{Lu}\&/\-–]+)[\s\.\xad–\-−,\)]+', r'\1', output)
         return output, i_lang
 
     def get_heading(self, section):
@@ -213,19 +208,15 @@ class TransformHtmlProceedingsToXml(object):
     def get_language(self, s_intervention, p, i_lang, new_paragraphs):
         language = p.xpath('.//span[@class="italic"][text()[re:test(.,"^[\xad\s\.—–\-−,\(]*({})[\xad\s\.—–\-−,\)]*")]]'.format('|'.join(self.langs)), namespaces=self.ns)
         if len(language) > 0 and not self.explanations_of_vote.match(language[0].text):
-#             lang = self.lang_pattern.match(language[0].text)
             lang = re.match(r'.*({}).*'.format('|'.join(self.langs)), language[0].text)
             output = lang.group(1)
             for l in language:
                 l.drop_tree()
         else:
             p = html.tostring(p, with_tail=True, encoding='utf-8').decode('utf-8')
-#             lang_in_text = self.lang_pattern_in_text.search(p)
-#             lang_in_text = re.search(r'\(({})\)'.format('|'.join(self.langs+['UK'])), p)
             lang_in_text = re.search(r'\(({})\)'.format('|'.join(self.langs)), p)
             if lang_in_text is not None:
                 output = lang_in_text.group(1)
-#                 p = re.sub(r'\(({})\) *'.format('|'.join(self.langs+['UK'])), r'', p)
                 p = re.sub(r'\(({})\) *'.format('|'.join(self.langs)), r'', p)
             else:
                 if len(new_paragraphs) == 0:
@@ -287,7 +278,6 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'\( +\)', r'', content)
             content = re.sub(r'\( +?', r'(', content)
             content = re.sub(r' +\)', r')', content)
-#             content = re.sub(r'^[\s\.–\-−,\)]*\((Madam|Mr President)', r'\1', content)
             content = re.sub(r'^,? *Neil,? +\. +– +', r'', content)
             content = re.sub(r'^\(PPE-DE\), +\. +– +', r'', content)
             content = re.sub(r'^\(Verts/ALE\), +\. +– +', r'', content)
@@ -367,9 +357,6 @@ class TransformHtmlProceedingsToXml(object):
                     role, i_lang = self.get_role(intervention)
                     if role is not None:
                         s_intervention['role'] = role
-#                     if 'role' in s_intervention:
-# #                         s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
-#                         print('F: ', s_intervention['role'])
                     s_intervention = self.get_paragraphs(intervention, s_intervention, i_lang)
                     self.intervention_to_xml(x_section, s_intervention)
             self.serialize(infile, root)
