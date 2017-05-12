@@ -2,7 +2,6 @@
 
 import os
 import argparse
-import datetime
 from lxml import etree, html
 from lxml.html.clean import Cleaner
 import fnmatch  # To match files by pattern
@@ -85,9 +84,9 @@ class TransformHtmlProceedingsToXml(object):
             for filename in fnmatch.filter(filenames, fileclue):
                 matches.append(os.path.join(root, filename))
         return matches
-    
+
     def get_localized_vars(self):
-        fname = self.language+".json"  
+        fname = self.language+".json"
         fpath = os.path.join('localization', fname)
         with open(fpath, mode="r", encoding="utf-8") as jfile:
             content = jfile.read()
@@ -96,7 +95,7 @@ class TransformHtmlProceedingsToXml(object):
 
     def read_html(self, infile):
         """Parse a HTML file."""
-        with open(infile, encoding='utf-8',mode='r') as input:
+        with open(infile, encoding='utf-8', mode='r') as input:
             return html.parse(input)
 
     def regextract(self, content, a_pattern, target_dic, dic_attrib):
@@ -118,6 +117,7 @@ class TransformHtmlProceedingsToXml(object):
         return content, target_dic
 
     def get_speaker_name(self, intervention):
+        # speaker_name = intervention.xpath('.//span[@class="doc_subtitle_level1_bis"]//text()')
         speaker_name = intervention.xpath('.//span[@class="doc_subtitle_level1_bis"]//text()')
         speaker_name = ''.join(speaker_name)
         speaker_name = re.sub(r'\n', r'', speaker_name)
@@ -126,11 +126,19 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = re.sub(r'\(\p{Lu}\p{Ll}+[/-]ALE\)', r'', speaker_name)
         speaker_name = re.sub(r' +', r' ', speaker_name)
         speaker_name = re.sub(r'\A[\xad\s\.—–\-−,\)]+', r'', speaker_name)
-        speaker_name = re.sub(r'([ \.]\p{LU}\.)[\xad\s\.—–\-−,:]+\Z', r'\1', speaker_name)
-        speaker_name = re.sub(r'(\p{L}\p{L})[\xad\s\.—–\-−,\):]+\Z', r'\1', speaker_name)
-#         speaker_name_b = speaker_name
+        speaker_name = re.sub(
+            r'([ \.]\p{LU}\.)[\xad\s\.—–\-−,:]+\Z',
+            r'\1',
+            speaker_name)
+        speaker_name = re.sub(
+            r'(\p{L}\p{L})[\xad\s\.—–\-−,\):]+\Z',
+            r'\1',
+            speaker_name)
         speaker_name = re.sub(r'(\p{L}\p{L}) . —\Z', r'\1', speaker_name)
-        speaker_name = re.sub(r'(Figel’)[\xad\s\.—–\-−,\):]+\Z', r'\1', speaker_name)
+        speaker_name = re.sub(
+            r'(Figel’)[\xad\s\.—–\-−,\):]+\Z',
+            r'\1',
+            speaker_name)
         speaker_name = re.sub(r' \.\Z', r'', speaker_name)
         speaker_name = re.sub(r'\([\p{Lu}/\xad\-–]+\Z', r'', speaker_name)
         speaker_name = re.sub(r' +\Z', r'', speaker_name)
@@ -140,8 +148,10 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = re.sub(r' *,(\S)', r', \1', speaker_name)
         speaker_name = re.sub(r',\Z', r'', speaker_name)
         speaker_name = re.sub(r'(Bartholomeos I)\.', r'\1', speaker_name)
-        speaker_name = re.sub(r', im Namen der Delegation der britischen Konservativen', r'', speaker_name)
-#         print(speaker_name_b,'||',speaker_name)
+        speaker_name = re.sub(
+            r', im Namen der Delegation der britischen Konservativen',
+            r'',
+            speaker_name)
         return speaker_name
 
     def get_speaker_id(self, intervention):
@@ -178,8 +188,9 @@ class TransformHtmlProceedingsToXml(object):
                 elif type(role) is html.HtmlElement:
                     output.append(role.text)
             for role in roles:
-#                 lang = self.lang_pattern.match(role.text)
-                lang = re.match(r'.*({}).*'.format('|'.join(self.langs)), role.text)
+                lang = re.match(
+                    r'.*({}).*'.format('|'.join(self.langs)),
+                    role.text)
                 if lang is not None:
                     i_lang = lang.group(1)
                 else:
@@ -189,7 +200,6 @@ class TransformHtmlProceedingsToXml(object):
             output = None
             i_lang = None
         if output is not None:
-#             print('E: ', output)
             output = " ".join(output)
             output = re.sub(r'\n', r' ', output)
             output = re.sub(r' +', r' ', output)
@@ -210,13 +220,17 @@ class TransformHtmlProceedingsToXml(object):
     def get_language(self, s_intervention, p, i_lang, new_paragraphs):
         language = p.xpath('.//span[@class="italic"][text()[re:test(.,"^[\xad\s\.—–\-−,\(]*({})[\xad\s\.—–\-−,\)]*")]]'.format('|'.join(self.langs)), namespaces=self.ns)
         if len(language) > 0 and not self.explanations_of_vote.match(language[0].text):
-            lang = re.match(r'.*({}).*'.format('|'.join(self.langs)), language[0].text)
+            lang = re.match(
+                r'.*({}).*'.format('|'.join(self.langs)),
+                language[0].text)
             output = lang.group(1)
             for l in language:
                 l.drop_tree()
         else:
             p = html.tostring(p, with_tail=True, encoding='utf-8').decode('utf-8')
-            lang_in_text = re.search(r'\(({})\)'.format('|'.join(self.langs)), p)
+            lang_in_text = re.search(
+                r'\(({})\)'.format('|'.join(self.langs)),
+                p)
             if lang_in_text is not None:
                 output = lang_in_text.group(1)
                 p = re.sub(r'\(({})\) *'.format('|'.join(self.langs)), r'', p)
@@ -225,7 +239,7 @@ class TransformHtmlProceedingsToXml(object):
                     if 'role' in s_intervention.keys():
                         president_pattern = '|'.join(self.loc['president'])
                         if re.match(r'{}\Z'.format(president_pattern), s_intervention['role']):
-                            output = 'unknown'
+                                output = 'unknown'
                         else:
                             if i_lang is None:
                                 output = self.language
@@ -240,15 +254,14 @@ class TransformHtmlProceedingsToXml(object):
                     output = new_paragraphs[-1]['language']
             p = html.fromstring(p)
         return output, p
-    
+
     def clean_paragraph(self, p):
-        cleaner = Cleaner(remove_tags=['a'], kill_tags=['sup','img'])
+        cleaner = Cleaner(remove_tags=['a'], kill_tags=['sup', 'img'])
         p = cleaner.clean_html(p)
         doc_subtitle = p.xpath('.//span[@class="doc_subtitle_level1_bis"]')
         for d in doc_subtitle:
             d.drop_tree()
         return p
-    
 
     def get_paragraphs(self, intervention, s_intervention, i_lang):
         paragraphs = intervention.xpath('.//p[@class="contents" or @class="doc_subtitle_level1"]')
@@ -260,7 +273,11 @@ class TransformHtmlProceedingsToXml(object):
             p = re.sub(r'<br ?/?>', r' ', p)
             p = html.fromstring(p)
             p = self.clean_paragraph(p)
-            new_p['language'], p = self.get_language(s_intervention, p, i_lang, new_paragraphs)
+            new_p['language'], p = self.get_language(
+                s_intervention,
+                p,
+                i_lang,
+                new_paragraphs)
             content = p.text_content()
             content = content.strip()
             content = re.sub(r'\t', r' ', content)
@@ -289,7 +306,11 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'^\((Madam President)', r'\1', content)
             content = re.sub(r'^\((Mr President)', r'\1', content)
             for pattern in self.loc['more_roles']:
-                content, s_intervention = self.regextract(content, pattern, s_intervention, 'role')
+                content, s_intervention = self.regextract(
+                    content,
+                    pattern,
+                    s_intervention,
+                    'role')
             content = re.sub(r'\*{3,}', r'', content)
             new_p['content'] = content
             new_paragraphs.append(new_p)
@@ -299,7 +320,9 @@ class TransformHtmlProceedingsToXml(object):
     def add_root_attributes(self, root, tree, infile):
         root.attrib['id'] = os.path.splitext(os.path.basename(infile))[0]
         root.attrib['lang'] = self.language
-        date_string = re.match(r'^(.+?,? \d.+?) - (.+)$', tree.xpath('//td[@class="doc_title" and @align="left" and @valign="top"]')[0].text)
+        date_string = re.match(
+            r'^(.+?,? \d.+?) - (.+)$',
+            tree.xpath('//td[@class="doc_title" and @align="left" and @valign="top"]')[0].text)
         date = dateparser.parse(date_string.group(1)).date()
         place = date_string.group(2)
         root.attrib['date'] = str(date)
@@ -309,7 +332,8 @@ class TransformHtmlProceedingsToXml(object):
 
     def get_sentences(self, text, parent):
         lang = {'EN': 'english', 'DE': 'german', 'ES': 'spanish'}
-        tokenizer = nltk.data.load('tokenizers/punkt/{}.pickle'.format(lang[self.language]))
+        tokenizer = nltk.data.load(
+            'tokenizers/punkt/{}.pickle'.format(lang[self.language]))
         sentences = tokenizer.tokenize(text)
         for sentence in sentences:
             etree.SubElement(parent, 's').text = sentence
@@ -332,19 +356,29 @@ class TransformHtmlProceedingsToXml(object):
         for paragraph in s_intervention['contents']:
             if len(paragraph['content']) > 0:
                 if not re.match(r'^\(.+?\)$', paragraph['content']):
-                    x_p = etree.SubElement(x_intervention, 'p', sl=paragraph['language'])
+                    x_p = etree.SubElement(
+                        x_intervention,
+                        'p',
+                        sl=paragraph['language'])
                     if self.sentences:
                         self.get_sentences(paragraph['content'], x_p)
                     else:
                         x_p.text = paragraph['content']
                 else:
-                    etree.SubElement(x_intervention, 'a', text=paragraph['content'])
+                    etree.SubElement(
+                        x_intervention,
+                        'a',
+                        text=paragraph['content'])
         pass
 
     def serialize(self, infile, root):
         ofile_name = os.path.splitext(os.path.basename(infile))[0]
         ofile_path = os.path.join(self.outdir, ofile_name+'.xml')
-        xml = etree.tostring(root, encoding='utf-8', xml_declaration=True, pretty_print=True).decode('utf-8')
+        xml = etree.tostring(
+            root,
+            encoding='utf-8',
+            xml_declaration=True,
+            pretty_print=True).decode('utf-8')
         with open(ofile_path, mode='w', encoding='utf-8') as ofile:
             ofile.write(xml)
         pass
@@ -373,7 +407,8 @@ class TransformHtmlProceedingsToXml(object):
                     s_intervention['id'] = intervention_id
                     i_lang = None
                     s_intervention['speaker_id'] = self.get_speaker_id(intervention)
-                    s_intervention['is_mep'] = self.get_is_mep(s_intervention['speaker_id'])
+                    s_intervention['is_mep'] = self.get_is_mep(
+                        s_intervention['speaker_id'])
                     s_intervention['mode'] = self.get_mode(intervention)
                     speaker_name = self.get_speaker_name(intervention)
                     president_pattern = '|'.join(self.loc['president'])
@@ -384,7 +419,10 @@ class TransformHtmlProceedingsToXml(object):
                     role, i_lang = self.get_role(intervention)
                     if role is not None:
                         s_intervention['role'] = role
-                    s_intervention = self.get_paragraphs(intervention, s_intervention, i_lang)
+                    s_intervention = self.get_paragraphs(
+                        intervention,
+                        s_intervention,
+                        i_lang)
                     self.intervention_to_xml(x_section, s_intervention)
             self.serialize(infile, root)
             self.n_proceedings += 1
