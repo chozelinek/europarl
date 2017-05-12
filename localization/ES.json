@@ -1,15 +1,19 @@
 {
     "roles": [
-        "Alto Representante para la Política Exterior y de Seguridad Común.+?",
-        "[aA]utor",
+        "Alt[oa] Representante .+?",
+        "[aA]utora?.*?",
         "[Cc]omisión",
         "[Cc]onsejo",
-        "en nombre del .+",
-        "[Mm]iembro de la Comisión.+?",
-        "[Pp]onente.+?",
+        "en nombre de.+",
+        "[Mm]iembro de la Comisión.*?",
+        "[Pp]onente.*?",
         "[Pp]resident[ea].*?",
         "[Dd]efensor.+?",
-        "[Vv]icepresident[ea].*?"
+        "[Vv]icepresident[ea].*?",
+        "Comisari[oa]",
+        "suplente (?:del|de la) autora?.*",
+        "en representación de.+?",
+        "a nome del gruppo.*?"
     ],
     "president": [
         "El Presidente",
