@@ -307,6 +307,8 @@ class TransformHtmlProceedingsToXml(object):
 
     def intervention_to_xml(self, x_section, s_intervention):
         x_intervention = etree.SubElement(x_section, 'intervention')
+        if 'id' in s_intervention.keys():
+            x_intervention.attrib['id'] = s_intervention['id']
         if 'speaker_id' in s_intervention.keys():
             x_intervention.attrib['speaker_id'] = s_intervention['speaker_id']
         if 'name' in s_intervention.keys():
@@ -331,6 +333,10 @@ class TransformHtmlProceedingsToXml(object):
             ofile.write(xml)
         pass
 
+    def get_element_id(self, element):
+        output = element.getprevious().attrib['name']
+        return output
+
     def main(self):
         for infile in self.infiles:
             print(infile)
@@ -340,10 +346,15 @@ class TransformHtmlProceedingsToXml(object):
             sections = tree.xpath('//table[@class="doc_box_header" and @cellpadding="0"]')
             for section in sections:
                 heading = self.get_heading(section)
-                x_section = etree.SubElement(root, 'section', title=heading)
+                section_id = self.get_element_id(section)
+                x_section = etree.SubElement(root, 'section')
+                x_section.attrib['id'] = section_id
+                x_section.attrib['title'] = heading
                 interventions = section.xpath('.//table[@cellpadding="5"][.//img[@alt="MPphoto"]]')
                 for idx, intervention in enumerate(interventions):
                     s_intervention = {}
+                    intervention_id = self.get_element_id(intervention)
+                    s_intervention['id'] = intervention_id
                     i_lang = None
                     s_intervention['speaker_id'] = self.get_speaker_id(intervention)
                     s_intervention['is_mep'] = self.get_is_mep(s_intervention['speaker_id'])
