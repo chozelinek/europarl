@@ -334,6 +334,8 @@ class TransformHtmlProceedingsToXml(object):
         lang = {'EN': 'english', 'DE': 'german', 'ES': 'spanish'}
         tokenizer = nltk.data.load(
             'tokenizers/punkt/{}.pickle'.format(lang[self.language]))
+        if 'extra_abbreviations' in self.loc:
+            tokenizer._params.abbrev_types.update(self.loc['extra_abbreviations'])
         sentences = tokenizer.tokenize(text)
         for sentence in sentences:
             etree.SubElement(parent, 's').text = sentence

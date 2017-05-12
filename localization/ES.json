@@ -4,6 +4,7 @@
         "[aA]utora?.*?",
         "[Cc]omisión",
         "[Cc]onsejo",
+        "Consejo",
         "en nombre de.+",
         "[Mm]iembro de la Comisión.*?",
         "[Pp]onente.*?",
@@ -25,5 +26,9 @@
         "^(Presidente del Tribunal de Cuentas)[\\s\\-–\\.]+",
         "^(Presidente en ejercicio del Consejo)[\\s\\-–\\.]+",
         "^(Presidente de la Comisión de Asuntos Económicos y Monetarios)[\\s\\-–\\.]+"
+    ],
+    "extra_abbreviations": [
+        "sra",
+        "sres"
     ]
 }
