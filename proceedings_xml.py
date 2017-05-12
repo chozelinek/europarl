@@ -11,6 +11,8 @@ import regex as re  # Maybe not necessary
 import time
 import dateparser
 import json
+import nltk
+
 
 def timeit(method):
     """Time methods."""
@@ -305,6 +307,14 @@ class TransformHtmlProceedingsToXml(object):
         root.attrib['edition'] = tree.xpath('//td[@class="doc_title" and @align="right" and @valign="top"]')[0].text
         pass
 
+    def get_sentences(self, text, parent):
+        lang = {'EN': 'english', 'DE': 'german', 'ES': 'spanish'}
+        tokenizer = nltk.data.load('tokenizers/punkt/{}.pickle'.format(lang[self.language]))
+        sentences = tokenizer.tokenize(text)
+        for sentence in sentences:
+            etree.SubElement(parent, 's').text = sentence
+        pass
+
     def intervention_to_xml(self, x_section, s_intervention):
         x_intervention = etree.SubElement(x_section, 'intervention')
         if 'id' in s_intervention.keys():
@@ -321,8 +331,14 @@ class TransformHtmlProceedingsToXml(object):
             x_intervention.attrib['role'] = s_intervention['role']
         for paragraph in s_intervention['contents']:
             if len(paragraph['content']) > 0:
-                x_p = etree.SubElement(x_intervention, 'p', sl=paragraph['language'])
-                x_p.text = paragraph['content']
+                if not re.match(r'^\(.+?\)$', paragraph['content']):
+                    x_p = etree.SubElement(x_intervention, 'p', sl=paragraph['language'])
+                    if self.sentences:
+                        self.get_sentences(paragraph['content'], x_p)
+                    else:
+                        x_p.text = paragraph['content']
+                else:
+                    etree.SubElement(x_intervention, 'a', text=paragraph['content'])
         pass
 
     def serialize(self, infile, root):
@@ -395,6 +411,12 @@ class TransformHtmlProceedingsToXml(object):
             required=False,
             default="*.html",
             help="glob pattern to filter files.")
+        parser.add_argument(
+            '-s', "--sentences",
+            required=False,
+            default=False,
+            action="store_true",
+            help="annotate sentences.")
         args = parser.parse_args()
         self.indir = args.input
         self.outdir = args.output
@@ -402,6 +424,7 @@ class TransformHtmlProceedingsToXml(object):
             os.makedirs(self.outdir)
         self.language = args.language
         self.pattern = args.pattern
+        self.sentences = args.sentences
         pass
 
 
