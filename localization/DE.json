@@ -34,5 +34,9 @@
         "(?:Der )?Präsident",
         "(?:Die )?Präsidentin"
     ],
-    "in_writing": "schriftlich"
+    "in_writing": "schriftlich",
+    "more_roles": [
+        "(Rat)[\\s\\-–\\.]+",
+        "(Kommission)[\\s\\-–\\.]+"
+    ]
 }

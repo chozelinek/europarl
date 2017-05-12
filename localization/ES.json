@@ -19,5 +19,11 @@
         "El Presidente",
         "La Presidenta"
     ],
-    "in_writing": "[Pp]or escrito"
+    "in_writing": "[Pp]or escrito",
+    "more_roles": [
+        "^(Presidente designado de la Comisión)[\\s\\-–\\.]+",
+        "^(Presidente del Tribunal de Cuentas)[\\s\\-–\\.]+",
+        "^(Presidente en ejercicio del Consejo)[\\s\\-–\\.]+",
+        "^(Presidente de la Comisión de Asuntos Económicos y Monetarios)[\\s\\-–\\.]+"
+    ]
 }

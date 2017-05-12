@@ -296,21 +296,8 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'\A([\s\.—–\-−,\)]+)', r'', content)
             content = re.sub(r'^\((Madam President)', r'\1', content)
             content = re.sub(r'^\((Mr President)', r'\1', content)
-            if self.language == 'EN':
-                content, s_intervention = self.regextract(content, '^(Member of the Commission)\.[\s\-–]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(President-elect of the Commission)\.[\s\-–]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(Commission)\.[\s\-–]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(Council)\.[\s\-–]+', s_intervention, 'role')
-            if self.language == 'ES':
-                content, s_intervention = self.regextract(content, '^(Presidente designado de la Comisión)[\s\-–\.]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(Presidente del Tribunal de Cuentas)[\s\-–\.]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(Presidente en ejercicio del Consejo)[\s\-–\.]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '^(Presidente de la Comisión de Asuntos Económicos y Monetarios)[\s\-–\.]+', s_intervention, 'role')
-            if self.language == 'DE':
-                content, s_intervention = self.regextract(content, '(Rat)[\s\-–\.]+', s_intervention, 'role')
-                content, s_intervention = self.regextract(content, '(Kommission)[\s\-–\.]+', s_intervention, 'role')
-                
-                
+            for pattern in self.loc['more_roles']:
+                content, s_intervention = self.regextract(content, pattern, s_intervention, 'role')
             content = re.sub(r'\*{3,}', r'', content)
             new_p['content'] = content
             new_paragraphs.append(new_p)

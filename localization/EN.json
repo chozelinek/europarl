@@ -31,5 +31,11 @@
         "in the name of the.+?"
     ],
     "president": ["President"],
-    "in_writing": "in writing?"
+    "in_writing": "in writing?",
+    "more_roles": [
+        "^(Member of the Commission)\\.[\\s\\-–]+",
+        "^(President-elect of the Commission)\\.[\\s\\-–]+",
+        "^(Commission)\\.[\\s\\-–]+",
+        "^(Council)\\.[\\s\\-–]+"
+    ]
 }
