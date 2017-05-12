@@ -1,0 +1,27 @@
+{
+    "roles": [
+        "Commission",
+        "rapporteur",
+        "Council",
+        "Member of the Commission",
+        "President-in-Office of the Council",
+        "Vice-President of the Commission",
+        "[Aa]uthor",
+        "President of the Commission",
+        "draftsman.*?",
+        "deputising for the.+?",
+        "Ombudsman",
+        ".*?on behalf of.*?",
+        "President of the .+?",
+        "High Representative for the Common Foreign and Security Policy",
+        "rapporteur.*?",
+        "Vice-President.*?",
+        "President-in-Office of the",
+        "President-in-Office of the Council",
+        "general rapporteur",
+        "[cC]hairman of the Committee on .+?",
+        "deputy rapporteur"
+    ],
+    "president": ["President"],
+    "in_writing": "in writing?"
+}

@@ -1,0 +1,21 @@
+{
+    "roles": [
+        "[Aa]mtierender? Ratspräsident(?:in)?",
+        "Bürgerbeauftragter.*?",
+        "Präsident(?:in)? de.+?",
+        "Kommission",
+        "Rat",
+        "Berichterstatter(?:in)?.*?",
+        "D(?:er|ie) Präsident(?:in)?",
+        "Vizepräsident(?:in)? de.+?",
+        "Mitglied der Kommission",
+        "im Namen der.+?",
+        "Verfasser(?:in).*?",
+        "für die .+?Fraktion.*?"
+    ],
+    "president": [
+        "(?:Der )?Präsident",
+        "(?:Die )?Präsidentin"
+    ],
+    "in_writing": "schriftlich"
+}
