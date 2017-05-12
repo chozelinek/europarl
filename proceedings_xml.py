@@ -38,8 +38,34 @@ class TransformHtmlProceedingsToXml(object):
         self.ns = {'re': 'http://exslt.org/regular-expressions'}
         self.loc = self.get_localized_vars()
         self.explanations_of_vote = re.compile(r' *EXPLANATIONS? OF VOTES?')
-        self.lang_pattern = re.compile(r'.*(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK).*')
-        self.lang_pattern_in_text = re.compile(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK)\)')
+        self.langs = [
+            "BG",
+            "ES",
+            "CS",
+            "DA",
+            "DE",
+            "ET",
+            "EL",
+            "EN",
+            "FR",
+            "GA",
+            "HR",
+            "IT",
+            "LV",
+            "LT",
+            "HU",
+            "MT",
+            "NL",
+            "PL",
+            "PT",
+            "RO",
+            "SK",
+            "SL",
+            "FI",
+            "SV",
+            ]
+#         self.lang_pattern = re.compile(r'.*(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK).*')
+#         self.lang_pattern_in_text = re.compile(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK)\)')
         self.main()
 
     def __str__(self):
@@ -66,7 +92,6 @@ class TransformHtmlProceedingsToXml(object):
         fpath = os.path.join('localization', fname)
         with open(fpath, mode="r", encoding="utf-8") as jfile:
             content = jfile.read()
-        print(content)
         vars = json.loads(content)
         return vars
 
@@ -154,7 +179,8 @@ class TransformHtmlProceedingsToXml(object):
                 elif type(role) is html.HtmlElement:
                     output.append(role.text)
             for role in roles:
-                lang = self.lang_pattern.match(role.text)
+#                 lang = self.lang_pattern.match(role.text)
+                lang = re.match(r'.*({}).*'.format('|'.join(self.langs)), role.text)
                 if lang is not None:
                     i_lang = lang.group(1)
                 else:
@@ -185,18 +211,22 @@ class TransformHtmlProceedingsToXml(object):
         return heading
 
     def get_language(self, s_intervention, p, i_lang, new_paragraphs):
-        language = p.xpath('.//span[@class="italic"][text()[re:test(.,"(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV)")]]', namespaces=self.ns)
+        language = p.xpath('.//span[@class="italic"][text()[re:test(.,"^[\xad\s\.—–\-−,\(]*({})[\xad\s\.—–\-−,\)]*")]]'.format('|'.join(self.langs)), namespaces=self.ns)
         if len(language) > 0 and not self.explanations_of_vote.match(language[0].text):
-            lang = self.lang_pattern.match(language[0].text)
+#             lang = self.lang_pattern.match(language[0].text)
+            lang = re.match(r'.*({}).*'.format('|'.join(self.langs)), language[0].text)
             output = lang.group(1)
             for l in language:
                 l.drop_tree()
         else:
             p = html.tostring(p, with_tail=True, encoding='utf-8').decode('utf-8')
-            lang_in_text = self.lang_pattern_in_text.search(p)
+#             lang_in_text = self.lang_pattern_in_text.search(p)
+#             lang_in_text = re.search(r'\(({})\)'.format('|'.join(self.langs+['UK'])), p)
+            lang_in_text = re.search(r'\(({})\)'.format('|'.join(self.langs)), p)
             if lang_in_text is not None:
                 output = lang_in_text.group(1)
-                p = re.sub(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV)\) *', r'', p)
+#                 p = re.sub(r'\(({})\) *'.format('|'.join(self.langs+['UK'])), r'', p)
+                p = re.sub(r'\(({})\) *'.format('|'.join(self.langs)), r'', p)
             else:
                 if len(new_paragraphs) == 0:
                     if 'role' in s_intervention.keys():
