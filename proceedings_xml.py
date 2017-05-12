@@ -31,12 +31,13 @@ class TransformHtmlProceedingsToXml(object):
     @timeit
     def __init__(self):
         self.cli()
+        # import json
         self.infiles = self.get_files(self.indir, self.pattern)
         self.n_proceedings = 0
         self.ns = {'re': 'http://exslt.org/regular-expressions'}
         self.explanations_of_vote = re.compile(r' *EXPLANATIONS? OF VOTES?')
-        self.lang_pattern = re.compile(r'.*(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV).*')
-        self.lang_pattern_in_text = re.compile(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV)\)')
+        self.lang_pattern = re.compile(r'.*(BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK).*')
+        self.lang_pattern_in_text = re.compile(r'\((BG|ES|CS|DA|DE|ET|EL|EN|FR|GA|HR|IT|LV|LT|HU|MT|NL|PL|PT|RO|SK|SL|FI|SV|UK)\)')
         self.roles = {
             'EN': [
                    'Commission',
@@ -47,58 +48,48 @@ class TransformHtmlProceedingsToXml(object):
                    'Vice-President of the Commission',
                    '[Aa]uthor',
                    'President of the Commission',
-                   'draftsman of the opinion of the Committee on .+',
+                   'draftsman.*?',
                    'deputising for the.+?',
                    'Ombudsman',
                    '.*?on behalf of.*?',
                    'President of the .+?',
                    'High Representative for the Common Foreign and Security Policy',
-                   'rapporteur for the opinion of the Committee on .+',
-                   'Vice-President of the Commission/High Representative of the Union for Foreign Affairs and Security Policy',
+                   'rapporteur.*?',
+                   'Vice-President.*?',
                    'President-in-Office of the',
                    'President-in-Office of the Council',
-                   'President of the Court of Auditors',
                    'general rapporteur',
                    '[cC]hairman of the Committee on .+?',
                    'deputy rapporteur',
                     ],
             'ES': [
-                   'Alto Representante para la Política Exterior y de Seguridad Común',
+                   'Alto Representante para la Política Exterior y de Seguridad Común.+?',
                    '[aA]utor',
                    '[Cc]omisión',
                    '[Cc]onsejo',
-                   'en nombre del .*',
-                   '[Mm]iembro de la Comisión.+'
-                   '[Pp]onente.+',
-                   '[Pp]resident[ea] elect[oa] de la Comisión',
-                   '[Pp]resident[ea] designad[oa] de la Comisión',
-                   '[Pp]resident[ea] en .+',
-                   '[Pp]resident[ea] de.+',
-#                    '[Pp]resident[ea] en ejercicio del Consejo',
-#                    '[Pp]resident[ea] de la Comisión de .+',
-#                    '[Pp]resident[ea] de la Comisión.+',
-#                    '[Pp]resident[ea] de la Delegación',
-#                    '[Pp]resident[ea] del Banco Central Europeo',
-#                    '[Pp]resident[ea] del BCE',
-#                    '[Pp]resident[ea] del Tribubal de Cuentas',
-#                    '[Pp]resident[ea] de la República.+',
-                   '[Vv]icepresident[ea] de la Comisión',
+                   'en nombre del .+',
+                   '[Mm]iembro de la Comisión.+?',
+                   '[Pp]onente.+?',
+                   '[Pp]resident[ea].*?',
+                   '[Dd]efensor.+?',
+                   '[Vv]icepresident[ea].*?',
                     ],
             'DE': [
-#                    '[Aa]mtierender? Ratspräsident(in)?'
-#                     'Präsidentin de.+',
-#                     'Präsident de.+',
-                    'Präsident(in)? de.+',
+                    '[Aa]mtierender? Ratspräsident(?:in)?',
+                    'Bürgerbeauftragter.*?',
+                    'Präsident(?:in)? de.+?',
                     'Kommission',
                     'Rat',
-                    'Berichterstatter(in)?',
-#                    'D(er|ie) Präsident(in)?',
-#                    'Vizepräsident(in)? de.+',
-#                    'Mitglied der Kommission',
-#                    'im Namen der .*'
+                    'Berichterstatter(?:in)?.*?',
+                    'D(?:er|ie) Präsident(?:in)?',
+                    'Vizepräsident(?:in)? de.+?',
+                    'Mitglied der Kommission',
+                    'im Namen der.+?',
+                    'Verfasser(?:in).*?',
+                    'für die .+?Fraktion.*?',
                    ]
                 }
-        self.president_role_locale = {
+        self.president = {
             'EN': [
                    'President'
                    ],
@@ -107,8 +98,8 @@ class TransformHtmlProceedingsToXml(object):
                    'La Presidenta'
                    ],
             'DE': [
-                   '(Der )?Präsident',
-                   '(Die )?Präsidentin']
+                   '(?:Der )?Präsident',
+                   '(?:Die )?Präsidentin']
             }
         self.main()
 
@@ -159,8 +150,8 @@ class TransformHtmlProceedingsToXml(object):
         speaker_name = ''.join(speaker_name)
         speaker_name = re.sub(r'\n', r'', speaker_name)
         speaker_name = re.sub(r'\&amp;', r'&', speaker_name)
-        speaker_name = re.sub(r'\([\p{Lu}\&/\-–]+\)', r'', speaker_name)
-        speaker_name = re.sub(r'\(\p{Lu}\p{Ll}+/ALE\)', r'', speaker_name)
+        speaker_name = re.sub(r'\([\p{Lu}\&/\-–\s]+\)', r'', speaker_name)
+        speaker_name = re.sub(r'\(\p{Lu}\p{Ll}+[/-]ALE\)', r'', speaker_name)
         speaker_name = re.sub(r' +', r' ', speaker_name)
         speaker_name = re.sub(r'\A[\xad\s\.–\-−,\)]+', r'', speaker_name)
         speaker_name = re.sub(r'([ \.]\p{LU}\.)[\xad\s\.–\-−,:]+\Z', r'\1', speaker_name)
@@ -215,9 +206,15 @@ class TransformHtmlProceedingsToXml(object):
 #         for rt in roles_test:
 #             print(html.tostring(rt))
 #         roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\.\W\s]*({})[\.\W\s]*(\([A-Z][A-Z]\))?[\.\W\s]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
-        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\xad\-–−\.]*({})[\s\xad\-–−\.]*(\([A-Z][A-Z]\))?[\s\xad\-–−\.]*$")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
+        roles = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"^[\s\xad\-–−\.]*(?:{})[\s\xad\-–−\.]*(?:\([A-Z][A-Z]\))?[\s\xad\-–−\.]*$", "m")]]'.format('|'.join(self.roles[self.language])), namespaces=self.ns)
         if len(roles) > 0:
-            output = roles[0].text.strip()
+#             output = roles[0].text.strip()
+            output = []
+            for role in roles:
+                if type(role) is str:
+                    output.append(role)
+                elif type(role) is html.HtmlElement:
+                    output.append(role.text)
             for role in roles:
                 lang = self.lang_pattern.match(role.text)
                 if lang is not None:
@@ -228,6 +225,17 @@ class TransformHtmlProceedingsToXml(object):
         else:
             output = None
             i_lang = None
+        if output is not None:
+            print('E: ', output)
+            output = " ".join(output)
+            output = re.sub(r'\n', r' ', output)
+            output = re.sub(r' +', r' ', output)
+            output = re.sub(r'\([\p{Lu}\&/\-–]+\)', r'', output)
+            output = re.sub(r'(\p{Ll})[\s\.\xad–\-−,\)]+\Z', r'\1', output)
+            output = re.sub(r'\A[\xad\s\.–\-−,\)]+', r'', output)
+            output = re.sub(r'[\xad\s\.–\-−,\)]+\Z', r'', output)
+#             output = re.sub(r'(V\p{Ll}+/ALE)[\s\.\xad–\-−,\)]+', r'', output)
+#             output = re.sub(r'(V\p{Ll}+/ALE|[\p{Lu}\&/\-–]+)[\s\.\xad–\-−,\)]+', r'\1', output)
         return output, i_lang
 
     def get_heading(self, section):
@@ -254,7 +262,7 @@ class TransformHtmlProceedingsToXml(object):
             else:
                 if len(new_paragraphs) == 0:
                     if 'role' in s_intervention.keys():
-                        president_pattern = '|'.join(self.president_role_locale[self.language])
+                        president_pattern = '|'.join(self.president[self.language])
                         if re.match(r'{}\Z'.format(president_pattern), s_intervention['role']):
                             output = 'unknown'
                         else:
@@ -301,6 +309,7 @@ class TransformHtmlProceedingsToXml(object):
             content = re.sub(r'\. \. \.', r'...', content)
             content = re.sub(r'\.{3,}', r'…', content)
             content = re.sub(r'…\.\.', r'…', content)
+            content = re.sub(r'^([\s\.–\-−,\)]+)', r'', content)
             content = re.sub(r'([^\.])(…)', r'\1 \2', content)
             content = re.sub(r'\.…', r' …', content)
             content = re.sub(r'\( ?… ?\)', r'(…)', content)
@@ -313,8 +322,12 @@ class TransformHtmlProceedingsToXml(object):
 #             content = re.sub(r'^[\s\.–\-−,\)]*\((Madam|Mr President)', r'\1', content)
             content = re.sub(r'^,? *Neil,? +\. +– +', r'', content)
             content = re.sub(r'^\(PPE-DE\), +\. +– +', r'', content)
+            content = re.sub(r'^\(Verts/ALE\), +\. +– +', r'', content)
+            content = re.sub(r'\A\([\p{Lu}\&/\-–]+\)', r'', content)
             content = re.sub(r' +', r' ', content)
-            content = re.sub(r'^([\s\.–\-−,\)]+)', r'', content)
+            content = re.sub(r'\A([\s\.–\-−,\)]+)', r'', content)
+            content = re.sub(r'^\((Madam President)', r'\1', content)
+            content = re.sub(r'^\((Mr President)', r'\1', content)
             if self.language == 'EN':
                 content, s_intervention = self.regextract(content, '^(Member of the Commission)\.[\s\-–]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(President-elect of the Commission)\.[\s\-–]+', s_intervention, 'role')
@@ -325,6 +338,10 @@ class TransformHtmlProceedingsToXml(object):
                 content, s_intervention = self.regextract(content, '^(Presidente del Tribunal de Cuentas)[\s\-–\.]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Presidente en ejercicio del Consejo)[\s\-–\.]+', s_intervention, 'role')
                 content, s_intervention = self.regextract(content, '^(Presidente de la Comisión de Asuntos Económicos y Monetarios)[\s\-–\.]+', s_intervention, 'role')
+            if self.language == 'DE':
+                content, s_intervention = self.regextract(content, '(Rat)[\s\-–\.]+', s_intervention, 'role')
+                content, s_intervention = self.regextract(content, '(Kommission)[\s\-–\.]+', s_intervention, 'role')
+                
                 
             content = re.sub(r'\*{3,}', r'', content)
             new_p['content'] = content
@@ -387,7 +404,7 @@ class TransformHtmlProceedingsToXml(object):
                     s_intervention['is_mep'] = self.get_is_mep(s_intervention['speaker_id'])
                     s_intervention['mode'] = self.get_mode(intervention)
                     speaker_name = self.get_speaker_name(intervention)
-                    president_pattern = '|'.join(self.president_role_locale[self.language])
+                    president_pattern = '|'.join(self.president[self.language])
                     if self.language == 'EN':
                         if re.match(r'{}\Z'.format(president_pattern), speaker_name):
                             s_intervention['role'] = 'President'
@@ -407,7 +424,8 @@ class TransformHtmlProceedingsToXml(object):
                     if role is not None:
                         s_intervention['role'] = role
                     if 'role' in s_intervention:
-                        s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
+#                         s_intervention['role'] = re.sub(r'(\p{Ll})[\s\.–\-−,\)]+$', r'\1', s_intervention['role'])
+                        print('F: ', s_intervention['role'])
                     s_intervention = self.get_paragraphs(intervention, s_intervention, i_lang)
                     self.intervention_to_xml(x_section, s_intervention)
             self.serialize(infile, root)
