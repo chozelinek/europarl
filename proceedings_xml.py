@@ -330,17 +330,6 @@ class TransformHtmlProceedingsToXml(object):
         root.attrib['edition'] = tree.xpath('//td[@class="doc_title" and @align="right" and @valign="top"]')[0].text
         pass
 
-    def get_sentences(self, text, parent):
-        lang = {'en': 'english', 'de': 'german', 'es': 'spanish'}
-        tokenizer = nltk.data.load(
-            'tokenizers/punkt/{}.pickle'.format(lang[self.language]))
-        if 'extra_abbreviations' in self.loc:
-            tokenizer._params.abbrev_types.update(self.loc['extra_abbreviations'])
-        sentences = tokenizer.tokenize(text)
-        for sentence in sentences:
-            etree.SubElement(parent, 's').text = sentence
-        pass
-
     def intervention_to_xml(self, x_section, s_intervention):
         x_intervention = etree.SubElement(x_section, 'intervention')
         if 'id' in s_intervention.keys():
@@ -361,11 +350,8 @@ class TransformHtmlProceedingsToXml(object):
                     x_p = etree.SubElement(
                         x_intervention,
                         'p',
-                        sl=paragraph['language'])
-                    if self.sentences:
-                        self.get_sentences(paragraph['content'], x_p)
-                    else:
-                        x_p.text = paragraph['content']
+                        sl=paragraph['language'].lower())
+                    x_p.text = paragraph['content']
                 else:
                     etree.SubElement(
                         x_intervention,
@@ -451,12 +437,6 @@ class TransformHtmlProceedingsToXml(object):
             required=False,
             default="*.html",
             help="glob pattern to filter files.")
-        parser.add_argument(
-            '-s', "--sentences",
-            required=False,
-            default=False,
-            action="store_true",
-            help="annotate sentences.")
         args = parser.parse_args()
         self.indir = args.input
         self.outdir = args.output
@@ -464,7 +444,6 @@ class TransformHtmlProceedingsToXml(object):
             os.makedirs(self.outdir)
         self.language = args.language
         self.pattern = args.pattern
-        self.sentences = args.sentences
         pass
 
 
