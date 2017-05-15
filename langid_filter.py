@@ -2,12 +2,13 @@
 
 import os
 import argparse
-from lxml import etree, html
-import fnmatch  # To match files by pattern
+from lxml import etree
+import fnmatch
 import time
 from langdetect import detect_langs
-from langdetect.lang_detect_exception import ErrorCode, LangDetectException
+from langdetect.lang_detect_exception import LangDetectException
 from langid.langid import LanguageIdentifier, model
+
 
 def timeit(method):
     """Time methods."""
@@ -31,7 +32,9 @@ class LangIder(object):
         self.cli()
         self.infiles = self.get_files(self.indir, self.pattern)
         self.n_proceedings = 0
-        self.identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+        self.identifier = LanguageIdentifier.from_modelstring(
+            model,
+            norm_probs=True)
         self.main()
 
     def __str__(self):
@@ -55,17 +58,17 @@ class LangIder(object):
 
     def read_xml(self, infile):
         """Parse a XML file.
-        
+
         Keyword arguments:
         infile -- a string for the path to the file to be read.
         """
         parser = etree.XMLParser(remove_blank_text=True)
-        with open(infile, encoding='utf-8',mode='r') as input:
+        with open(infile, encoding='utf-8', mode='r') as input:
             return etree.parse(input, parser)
 
     def serialize(self, infile, root):
         """Serialize Element as XML file.
-        
+
         Keyword arguments:
         infile -- a string for the path to the input file processed.
         root -- Element to be serialized as XML.
@@ -80,20 +83,23 @@ class LangIder(object):
         with open(ofile_path, mode='w', encoding='utf-8') as ofile:
             ofile.write(xml)
         pass
-    
+
     def get_parent(self, element):
         """Get parent of a XML Element."""
         parent = element.getparent()
         text = etree.tostring(parent, method='text', encoding='utf-8').decode()
         return text
-    
+
     def is_expected(self, element):
         """Test if languge of Element's text is the expected language.
-        
+
         Keyword arguments:
         element -- Element whose text is to be analyzed.
         """
-        text = etree.tostring(element, method='text', encoding='utf-8').decode()
+        text = etree.tostring(
+            element,
+            method='text',
+            encoding='utf-8').decode()
         try:
             ld = detect_langs(text)
         except LangDetectException:
@@ -112,11 +118,13 @@ class LangIder(object):
             output = False
         elif li[0] == self.expected and self.expected in [x.lang for x in ld]:
             output = True
-        elif li[0] == self.expected and self.expected not in [x.lang for x in ld]:
+        elif (li[0] == self.expected and self.expected not in
+                [x.lang for x in ld]):
             output = True
         elif (li[0] != self.expected and li[1] == 1) and li[0] != ld[0].lang:
             output = False
-        elif (li[0] != self.expected and li[1] < 0.9) and ld[0].lang == self.expected:
+        elif ((li[0] != self.expected and li[1] < 0.9) and
+                ld[0].lang == self.expected):
             output = True
         else:
             output = None
@@ -160,7 +168,8 @@ class LangIder(object):
             "-t", "--text",
             required=False,
             default="p",
-            help="name of the XML element containing the text to be analyzed. Default: 'p'.")
+            help="name of the XML element containing the text to be analyzed.\
+            Default: 'p'.")
         parser.add_argument(
             '-p', "--pattern",
             required=False,
@@ -175,5 +184,6 @@ class LangIder(object):
         self.text = args.text
         self.pattern = args.pattern
         pass
+
 
 print(LangIder())
