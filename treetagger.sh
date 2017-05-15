@@ -17,9 +17,12 @@ mkdir -p $ODIR_DE
 ## English
 echo "Tagging English proceedings with TreTagger ...."
 for i in $IDIR_EN/*.xml; do echo $i; tree-tagger-english < $i > $ODIR_EN/$(basename $i); done
+for i in $ODIR_EN/*.xml; do perl ‑CSAD ‑Mutf8 -pi -e 's/<unknown>/@unknown@/g' $i; done
 ## Spanish
 echo "Tagging Spanish proceedings with TreeTagger ...."
 for i in $IDIR_ES/*.xml; do echo $i; tree-tagger-spanish < $i > $ODIR_ES/$(basename $i); done
+for i in $ODIR_ES/*.xml; do perl ‑CSAD ‑Mutf8 -pi -e 's/<unknown>/@unknown@/g' $i; done
 ## German
 echo "Tagging German proceedings with TreeTagger ...."
 for i in $IDIR_DE/*.xml; do echo $i; tree-tagger-german < $i > $ODIR_DE/$(basename $i); done
+for i in $ODIR_DE/*.xml; do perl ‑CSAD ‑Mutf8 -pi -e 's/<unknown>/@unknown@/g' $i; done
