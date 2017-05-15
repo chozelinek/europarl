@@ -242,12 +242,12 @@ class TransformHtmlProceedingsToXml(object):
                                 output = 'unknown'
                         else:
                             if i_lang is None:
-                                output = self.language
+                                output = self.language.upper()
                             else:
                                 output = i_lang
                     else:
                         if i_lang is None:
-                            output = self.language
+                            output = self.language.upper()
                         else:
                             output = i_lang
                 else:
@@ -319,7 +319,7 @@ class TransformHtmlProceedingsToXml(object):
 
     def add_root_attributes(self, root, tree, infile):
         root.attrib['id'] = os.path.splitext(os.path.basename(infile))[0]
-        root.attrib['lang'] = self.language
+        root.attrib['lang'] = self.language.lower()
         date_string = re.match(
             r'^(.+?,? \d.+?) - (.+)$',
             tree.xpath('//td[@class="doc_title" and @align="left" and @valign="top"]')[0].text)
@@ -331,7 +331,7 @@ class TransformHtmlProceedingsToXml(object):
         pass
 
     def get_sentences(self, text, parent):
-        lang = {'EN': 'english', 'DE': 'german', 'ES': 'spanish'}
+        lang = {'en': 'english', 'de': 'german', 'es': 'spanish'}
         tokenizer = nltk.data.load(
             'tokenizers/punkt/{}.pickle'.format(lang[self.language]))
         if 'extra_abbreviations' in self.loc:
@@ -444,7 +444,7 @@ class TransformHtmlProceedingsToXml(object):
         parser.add_argument(
             "-l", "--language",
             required=True,
-            choices=['EN', 'ES', 'DE'],
+            choices=['en', 'es', 'de'],
             help="language of the version to be processed.")
         parser.add_argument(
             '-p', "--pattern",
