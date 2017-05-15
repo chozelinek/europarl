@@ -24,7 +24,7 @@ def timeit(method):
     return timed
 
 
-class LangIder(object):
+class FilterOutUnexpectedLanguage(object):
     """Identify language of a given string."""
 
     @timeit
@@ -186,4 +186,4 @@ class LangIder(object):
         pass
 
 
-print(LangIder())
+print(FilterOutUnexpectedLanguage())
