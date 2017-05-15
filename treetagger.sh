@@ -5,9 +5,9 @@ DATA=../data
 IDIR_EN=$DATA/xml_sentence/EN
 IDIR_ES=$DATA/xml_sentence/ES
 IDIR_DE=$DATA/xml_sentence/DE
-ODIR_EN=$DATA/treetagger/EN
-ODIR_ES=$DATA/treetagger/ES
-ODIR_DE=$DATA/treetagger/DE
+ODIR_EN=$DATA/ttg/EN
+ODIR_ES=$DATA/ttg/ES
+ODIR_DE=$DATA/ttg/DE
 
 ## Create output directories
 mkdir -p $ODIR_EN
