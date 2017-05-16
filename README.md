@@ -2,6 +2,8 @@
 
 This is a complete pipeline to create a comparable/parallel corpus made of European Parliament's proceedings enriched with speakers' metadata.
 
+This pipeline has been tested in macOS Sierra, it should work in UNIX too. Basically, Python 3 is required for almost every script. Some Python modules and/or tools might be needed too. Check specific requirements for each script.
+
 ## Contents
 
 - `localization`, resources for adaptation of scripts to different languages.
@@ -20,68 +22,100 @@ This is a complete pipeline to create a comparable/parallel corpus made of Europ
 - `translationse_filter.py`, script to classify utterances as original, translations and even by native speaker.
 - `treetagger.sh`, script to tokenize, lemmatize and tag PoS for texts.
 
-## Requirements
+## The pipeline
 
-This pipeline has been tested in macOS Sierra, it should work in UNIX too. Basically, Python 3 is required for almost every script. Some Python modules and/or tools might be needed too. Check the requirements below.
+You can find the complete pipeline to compile the EuroParl corpus in `compile.sh`.
 
-### `add_metadata.py`
+1. Download proceedings in HTML with `get_proceedings.py`
+1. Download MEPs metadata in HTML with `get_meps.py`
+1. Extract MEPs' information in a CSV file with `meps_ie.py`
+1. Model proceedings as XML with `proceedings_xml.py`
+1. Filter out text units not in the expected language (e.g. Bulgarian text in the English version) with `langid_filter.py`
+1. Add MEPs metadata to proceedings with `add_metadata.py`
+1. Add sentence boundaries (if needed) with `add_sentences.py`
+1. Annotate token, lemma, PoS with TreeTagger with `treetagger.sh`
+1. Separate originals from translations and even filter by native speakers with `translationese_filter.py`
+
+## `add_metadata.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - pandas
 
-### `add_sentences.py`
+## `add_sentences.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - [nltk](http://www.nltk.org) and the Punkt Tokenizer Models for [nltk.tokenize.punkt](http://www.nltk.org/_modules/nltk/tokenize/punkt.html), follow [Installing NLTK Data instructions](http://www.nltk.org/data.html).
 
-### `compile.sh`
+## `compile.sh`
+
+### Requirements
 
 All the requirements listed in this section and a bash shell.
 
-### `get_meps.py`
+## `get_meps.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - requests
 
-### `get_proceedings.py`
+## `get_proceedings.py`
+
+### Requirements
 
 - Python 3
 - requests
 
-### `langid_filter.py`
+## `langid_filter.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - langdetect
 - langid
 
-### `meps_ie.py`
+## `meps_ie.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - pandas
 
-### `proceedings_xml.py`
+## `proceedings_xml.py`
+
+### Requirements
 
 - Python 3
 - lxml
 - regex
 - dateparser
 
-### `proceedings_txt.py`
+## `proceedings_txt.py`
+
+### Requirements
 
 - Python 3
 - lxml
 
-### `translationse_filter.py`
+## `translationse_filter.py`
+
+### Requirements
 
 - Python 3
 - lxml
 
-### `treetagger.sh`
+## `treetagger.sh`
+
+### Requirements
 
 - TreeTagger
 - Language parameters:
