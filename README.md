@@ -1,28 +1,94 @@
 # EuroParl
 
-This is a toolkit to create a comparable/parallel corpus made of European Parliament's proceedings enriched with speakers' metadata.
+This is a complete pipeline to create a comparable/parallel corpus made of European Parliament's proceedings enriched with speakers' metadata.
 
 ## Contents
 
+- `localization`, resources for adaptation of scripts to different languages.
 - `LICENSE`, MIT license.
 - `README.md`, this file.
 - `add_metadata.py`, script to add MEPs metadata (CSV) to proceedings (XML).
+- `add_sentences.py`, script to split text in sentences with NLTK's Punkt tokenizer.
 - `compile.sh`, script to run the whole pipeline to compile the EuroParl corpus.
-- `dates.EN.txt`, one date per line in format YYYY-MM-DD.
+- `dates.txt`, one date per line in format YYYY-MM-DD.
 - `get_meps.py`, script to scrap MEPs information.
 - `get_proceedings.py`, script to scrap Proceedings of the European Parliament.
+- `langid_filter.py`, filter out paragraphs whose real language is not the expected (the same of the proceedings).
 - `meps_ie.py`, script to extract MEPs metadata from HTML to CSV.
 - `proceedings_txt.py`, script to extract text from HTML proceedings.
-- `proceedings_xml.py`, script to model as XML interventions in HTML proceedings.
+- `proceedings_xml.py`, script to model as XML text and metadata from HTML proceedings.
+- `translationse_filter.py`, script to classify utterances as original, translations and even by native speaker.
+- `treetagger.sh`, script to tokenize, lemmatize and tag PoS for texts.
 
 ## Requirements
 
-You need `python3` and the following modules:
+This pipeline has been tested in macOS Sierra, it should work in UNIX too. Basically, Python 3 is required for almost every script. Some Python modules and/or tools might be needed too. Check the requirements below.
 
-- `lxml`
-- `requests`
-- `pandas`
-- `dateparser`
+### `add_metadata.py`
+
+- Python 3
+- lxml
+- pandas
+
+### `add_sentences.py`
+
+- Python 3
+- lxml
+- [nltk](http://www.nltk.org) and the Punkt Tokenizer Models for [nltk.tokenize.punkt](http://www.nltk.org/_modules/nltk/tokenize/punkt.html), follow [Installing NLTK Data instructions](http://www.nltk.org/data.html).
+
+### `compile.sh`
+
+All the requirements listed in this section and a bash shell.
+
+### `get_meps.py`
+
+- Python 3
+- lxml
+- requests
+
+### `get_proceedings.py`
+
+- Python 3
+- requests
+
+### `langid_filter.py`
+
+- Python 3
+- lxml
+- langdetect
+- langid
+
+### `meps_ie.py`
+
+- Python 3
+- lxml
+- pandas
+
+### `proceedings_xml.py`
+
+- Python 3
+- lxml
+- regex
+- dateparser
+
+### `proceedings_txt.py`
+
+- Python 3
+- lxml
+
+### `translationse_filter.py`
+
+- Python 3
+- lxml
+
+### `treetagger.sh`
+
+- TreeTagger
+- Language parameters:
+    - English
+    - Spanish
+    - German
+- sed
 
 ## Scrapping European Parliament's proceedings
 
@@ -99,6 +165,14 @@ python proceedings_txt.py -i /path/to/html -o /path/to/output
 python proceedings_xml.py -i /path/to/html -o /path/to/xml -l EN
 ```
 
+## Filtering out text not in the expected language
+
+### Usage
+
+```shell
+python langid_filter.py -i /path/to/xml -o /path/to/xml
+```
+
 ## Extracting MEPs information from HTML
 
 ### Usage
@@ -113,4 +187,22 @@ python meps_ie.py -i /path/to/metadata/dir -o /path/to/output/dir
 
 ```shell
 python add_metadata.py -m /path/to/meps.csv -n /path/to/national_parties.csv -g /path/to/political_groups.csv -x /path/to/source/xml/dir -p "*.xml" -o /path/to/output/xml/dir
+```
+
+## Filtering text after *translationese* criteria: original, translations, and restrict to *native speakers*
+
+### Usage
+
+```shell
+# English originals in English proceedings
+python translationese_filter.py -i /path/to/english/proceedings -o /path/to/output/dir -l en
+
+# All translations in English proceedings
+python translationese_filter.py -i /path/to/english/proceedings -o /path/to/output/dir -l all
+
+# Translations from English in Spanish proceedings
+python translationese_filter.py -i /path/to/spanish/proceedings -o /path/to/output/dir -l en
+
+# English originals in English proceedings by native speakers
+python translationese_filter.py -i /path/to/english/proceedings -o /path/to/output/dir -l en -n
 ```
