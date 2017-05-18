@@ -6,11 +6,9 @@ from lxml import etree, html
 from lxml.html.clean import Cleaner
 import fnmatch  # To match files by pattern
 import regex as re  # Maybe not necessary
-# import re
 import time
 import dateparser
 import json
-import nltk
 
 
 def timeit(method):
@@ -117,8 +115,8 @@ class TransformHtmlProceedingsToXml(object):
         return content, target_dic
 
     def get_speaker_name(self, intervention):
-        # speaker_name = intervention.xpath('.//span[@class="doc_subtitle_level1_bis"]//text()')
-        speaker_name = intervention.xpath('.//span[@class="doc_subtitle_level1_bis"]//text()')
+        speaker_name = intervention.xpath(
+            './/span[@class="doc_subtitle_level1_bis"]//text()')
         speaker_name = ''.join(speaker_name)
         speaker_name = re.sub(r'\n', r'', speaker_name)
         speaker_name = re.sub(r'\&amp;', r'&', speaker_name)
@@ -169,7 +167,10 @@ class TransformHtmlProceedingsToXml(object):
         return output
 
     def get_mode(self, intervention):
-        in_writing = intervention.xpath('.//span[@class="italic"][text()[re:test(.,"{}")]]'.format(self.loc['in_writing']), namespaces=self.ns)
+        in_writing = intervention.xpath(
+            './/span[@class="italic"][text()[re:test(.,"{}")]]'.format(
+                self.loc['in_writing']),
+            namespaces=self.ns)
         if len(in_writing) > 0:
             output = 'written'
             for writing in in_writing:
@@ -264,11 +265,15 @@ class TransformHtmlProceedingsToXml(object):
         return p
 
     def get_paragraphs(self, intervention, s_intervention, i_lang):
-        paragraphs = intervention.xpath('.//p[@class="contents" or @class="doc_subtitle_level1"]')
+        paragraphs = intervention.xpath(
+            './/p[@class="contents" or @class="doc_subtitle_level1"]')
         new_paragraphs = []
         for p in paragraphs:
             new_p = {}
-            p = html.tostring(p, with_tail=True, encoding='utf-8').decode('utf-8')
+            p = html.tostring(
+                p,
+                with_tail=True,
+                encoding='utf-8').decode('utf-8')
             p = re.sub(r'\n+', r' ', p)
             p = re.sub(r'<br ?/?>', r' ', p)
             p = html.fromstring(p)
@@ -381,14 +386,16 @@ class TransformHtmlProceedingsToXml(object):
             tree = self.read_html(infile)
             root = etree.Element('text')
             self.add_root_attributes(root, tree, infile)
-            sections = tree.xpath('//table[@class="doc_box_header" and @cellpadding="0"]')
+            sections = tree.xpath(
+                '//table[@class="doc_box_header" and @cellpadding="0"]')
             for section in sections:
                 heading = self.get_heading(section)
                 section_id = self.get_element_id(section)
                 x_section = etree.SubElement(root, 'section')
                 x_section.attrib['id'] = section_id
                 x_section.attrib['title'] = heading
-                interventions = section.xpath('.//table[@cellpadding="5"][.//img[@alt="MPphoto"]]')
+                interventions = section.xpath(
+                    './/table[@cellpadding="5"][.//img[@alt="MPphoto"]]')
                 for idx, intervention in enumerate(interventions):
                     s_intervention = {}
                     intervention_id = self.get_element_id(intervention)

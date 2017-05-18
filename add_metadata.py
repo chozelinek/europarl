@@ -2,11 +2,9 @@
 
 import os
 import argparse
-import datetime
-from lxml import etree, html
+from lxml import etree
 from lxml.html.clean import Cleaner
-import fnmatch  # To match files by pattern
-import re
+import fnmatch
 import time
 import pandas as pd
 import datetime
@@ -24,6 +22,7 @@ def timeit(method):
         return result
 
     return timed
+
 
 class AddMetadata(object):
     """Get proceedings of the European Parliament."""
@@ -56,17 +55,21 @@ class AddMetadata(object):
 
     def read_xml(self, infile):
         """Parse a HTML file."""
-        with open(infile, encoding='utf-8',mode='r') as input:
+        with open(infile, encoding='utf-8', mode='r') as input:
             return etree.parse(input)
 
     def serialize(self, infile, root):
         ofile_name = os.path.splitext(os.path.basename(infile))[0]
         ofile_path = os.path.join(self.outdir, ofile_name+'.xml')
-        xml = etree.tostring(root, encoding='utf-8', xml_declaration=True, pretty_print=True).decode('utf-8')
+        xml = etree.tostring(
+            root,
+            encoding='utf-8',
+            xml_declaration=True,
+            pretty_print=True).decode('utf-8')
         with open(ofile_path, mode='w', encoding='utf-8') as ofile:
             ofile.write(xml)
         pass
-    
+
     def main(self):
         meps = pd.read_csv(
             self.meps,
@@ -79,7 +82,7 @@ class AddMetadata(object):
                 self.n_parties,
                 sep='\t',
                 encoding='utf-8',
-                parse_dates=[1,2],
+                parse_dates=[1, 2],
                 infer_datetime_format=True,
                 dtype={'id': str}
                 )
@@ -88,7 +91,7 @@ class AddMetadata(object):
                 self.p_groups,
                 sep='\t',
                 encoding='utf-8',
-                parse_dates=[2,3],
+                parse_dates=[2, 3],
                 infer_datetime_format=True,
                 dtype={'id': str}
                 )
@@ -96,16 +99,24 @@ class AddMetadata(object):
             print(infile)
             tree = self.read_xml(infile)
             root = tree.getroot()
-            fdate = datetime.datetime.strptime(root.attrib['date'], '%Y-%m-%d').date()
-            interventions = tree.xpath('.//intervention[@speaker_id!="photo_generic"]')
+            fdate = datetime.datetime.strptime(
+                root.attrib['date'], '%Y-%m-%d').date()
+            interventions = tree.xpath(
+                './/intervention[@speaker_id!="photo_generic"]')
             for i in interventions:
                 metadata = []
                 speaker_id = i.attrib['speaker_id']
                 idx_meps = meps.loc[meps['id'] == speaker_id].index.tolist()[0]
                 metadata.append(('name', meps.get_value(idx_meps, 'name')))
-                metadata.append(('nationality', meps.get_value(idx_meps, 'nationality')))
-                metadata.append(('birth_date', meps.get_value(idx_meps, 'birth_date')))
-                metadata.append(('birth_place', meps.get_value(idx_meps, 'birth_place')))
+                metadata.append((
+                    'nationality',
+                    meps.get_value(idx_meps, 'nationality')))
+                metadata.append((
+                    'birth_date',
+                    meps.get_value(idx_meps, 'birth_date')))
+                metadata.append((
+                    'birth_place',
+                    meps.get_value(idx_meps, 'birth_place')))
                 if self.n_parties is not None:
                     idx_n_party = n_parties.loc[(n_parties['id'] == speaker_id) & (n_parties['s_date'] <= fdate) & (n_parties['e_date'] >= fdate)].index.tolist()
                     if len(idx_n_party) > 0:
@@ -115,10 +126,14 @@ class AddMetadata(object):
                     idx_p_group = p_groups.loc[(p_groups['id'] == speaker_id) & (p_groups['s_date'] <= fdate) & (p_groups['e_date'] >= fdate)].index.tolist()
                     if len(idx_p_group) > 0:
                         idx_p_group = idx_p_group[0]
-                        metadata.append(('p_group', p_groups.get_value(idx_p_group, 'p_group')))
-                        metadata.append(('m_state', p_groups.get_value(idx_p_group, 'm_state')))
+                        metadata.append((
+                            'p_group',
+                            p_groups.get_value(idx_p_group, 'p_group')))
+                        metadata.append((
+                            'm_state',
+                            p_groups.get_value(idx_p_group, 'm_state')))
                 for a in metadata:
-                    if type(a[1]) is not float: 
+                    if type(a[1]) is not float:
                         i.attrib[a[0]] = a[1]
             self.serialize(infile, root)
             self.n_proceedings += 1
@@ -144,7 +159,8 @@ class AddMetadata(object):
         parser.add_argument(
             "-x", "--xml",
             required=True,
-            help="path to the directory with the xml files we want to add metadata.")
+            help="path to the directory with the xml files we want to add\
+                metadata.")
         parser.add_argument(
             "-o", "--output",
             required=True,

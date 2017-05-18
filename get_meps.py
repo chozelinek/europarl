@@ -45,7 +45,9 @@ class GetMeps(object):
             all_mep_ids = all_meps.xpath('//id/text()')
             if self.resume is True:
                 already_downloaded = self.get_files(self.outdir, "*.html")
-                already_downloaded = [os.path.splitext(os.path.basename(x))[0] for x in already_downloaded]
+                already_downloaded = [
+                    os.path.splitext(
+                        os.path.basename(x))[0] for x in already_downloaded]
                 remaining_ids = set(all_mep_ids) - set(already_downloaded)
                 ids_to_download = set(remaining_ids)
             else:
@@ -88,7 +90,8 @@ class GetMeps(object):
             "-r", "--resume",
             required=False,
             action="store_true",
-            help="resume downloads from already downloaded files in output folder.")
+            help="resume downloads from already downloaded files\
+                in output folder.")
         args = parser.parse_args()
         self.outdir = args.output
         self.fromfile = args.fromfile
