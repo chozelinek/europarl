@@ -5,6 +5,7 @@ import argparse
 from lxml import etree
 import fnmatch  # To match files by pattern
 import time
+import re
 
 
 def timeit(method):
@@ -121,11 +122,7 @@ class FilterOutTranslationese(object):
         """
         ofile_name = os.path.splitext(os.path.basename(infile))[0]
         ofile_path = os.path.join(self.outdir, ofile_name+'.xml')
-        xml = etree.tostring(
-            root,
-            encoding='utf-8',
-            xml_declaration=True,
-            pretty_print=True).decode('utf-8')
+        xml = self.unprettify(root)
         with open(ofile_path, mode='w', encoding='utf-8') as ofile:
             ofile.write(xml)
         pass
@@ -147,6 +144,39 @@ class FilterOutTranslationese(object):
         if len(parent) == 0:
             parent.getparent().remove(parent)
         pass
+    
+    def unprettify(self, tree):
+        """Remove any indentation introduced by pretty print."""
+        tree = etree.tostring(  # convert XML tree to string
+            tree,
+            encoding="utf-8",
+            method="xml",
+            xml_declaration=True).decode()
+        tree = re.sub(  # remove trailing spaces before tag
+            r"(\n) +(<)",
+            r"\1\2",
+            tree)
+        tree = re.sub(  # put each XML element in a different line
+            r"> *<",
+            r">\n<",
+            tree)
+        tree = re.sub(  # put opening tag and FL output in different lines
+            r"(<.+?>)",
+            r"\1\n",
+            tree)
+        tree = re.sub(  # put FL output and closing tag in different liens
+            r"(</.+?>)",
+            r"\n\1",
+            tree)
+        tree = re.sub(
+            r"(>)([^.])",
+            r"\1\n\2",
+            tree)
+        tree = re.sub(  # remove unnecessary empty lines
+            r"\n\n+",
+            r"\n",
+            tree)
+        return tree
 
     def main(self):
         for infile in self.infiles:
@@ -155,7 +185,6 @@ class FilterOutTranslationese(object):
             root = tree.getroot()
             self.language = root.attrib['lang']
             self.langs_to_be_removed = self.get_langs_to_be_removed()
-            print(self.langs_to_be_removed)
             elements = tree.xpath('//{}'.format(self.element))
             for e in elements:
                 if self.native is False:
@@ -163,15 +192,20 @@ class FilterOutTranslationese(object):
                         self.remove_element(e)
                 else:
                     if self.sl != 'all':
-                        if (e.attrib['sl'].lower() in self.langs_to_be_removed
-                                or (e.attrib['sl'] == self.sl
-                                    and e.getparent().attrib['nationality']
-                                    not in self.nationalities[self.sl])):
+                        if e.attrib['sl'].lower() in self.langs_to_be_removed:
+                            self.remove_element(e)
+                        elif 'nationality' not in e.getparent().attrib:
+                            self.remove_element(e)
+                        elif (e.attrib['sl'] == self.sl and
+                              e.getparent().attrib['nationality']
+                              not in self.nationalities[self.sl]):
                             self.remove_element(e)
                     else:
                         if e.attrib['sl'].lower() in self.langs_to_be_removed:
                             self.remove_element(e)
-                        elif 'nationality' in e.getparent().attrib:
+                        elif 'nationality' not in e.getparent().attrib:
+                            self.remove_element(e)
+                        else:
                             if (e.getparent().attrib['nationality'] not in
                                     self.nationalities[e.attrib['sl'].lower()]):
                                 self.remove_element(e)
@@ -211,6 +245,13 @@ class FilterOutTranslationese(object):
             required=False,
             default='p',
             help="Element containing the language attribute.")
+        parser.add_argument(
+            '-u', "--unprettify",
+            required=False,
+            default=False,
+            action="store_true",
+            help="unprettify XML output to get one element per line and\
+                no indentation.")
         args = parser.parse_args()
         self.indir = args.input
         self.outdir = args.output
