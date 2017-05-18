@@ -4,6 +4,13 @@ This is a complete pipeline to create a comparable/parallel corpus made of Europ
 
 This pipeline has been tested in macOS Sierra, it should work in UNIX too. Basically, Python 3 is required for almost every script. Some Python modules and/or tools might be needed too. Check specific requirements for each script.
 
+Related projects:
+
+- [LinkedEP](http://purl.org/linkedpolitics)/[The talk of Europe](http://www.talkofeurope.eu/): Plenary debates of the European Parliament as Linked Open Data.
+- [CoStEP](http://pub.cl.uzh.ch/purl/costep): Corrected & Structured Europarl Corpus
+- [Koehn's EuroParl](http://www.statmt.org/europarl): European Parliament Proceedings Parallel Corpus
+- [ECPC](http://www.ecpc.uji.es): European Comparable and Parallel Corpora
+
 ## Contents
 
 - `localization`, resources for adaptation of scripts to different languages.
@@ -20,7 +27,7 @@ This pipeline has been tested in macOS Sierra, it should work in UNIX too. Basic
 - `proceedings_txt.py`, script to extract text from HTML proceedings.
 - `proceedings_xml.py`, script to model as XML text and metadata from HTML proceedings.
 - `translationse_filter.py`, script to classify utterances as original, translations and even by native speaker.
-- `treetagger.sh`, script to tokenize, lemmatize and tag PoS for texts.
+- `treetagger.py`, script to tokenize, lemmatize and tag PoS using TreeTagger producing well-formed XML.
 
 ## The pipeline
 
@@ -33,10 +40,25 @@ You can find the complete pipeline to compile the EuroParl corpus in `compile.sh
 1. Filter out text units not in the expected language (e.g. Bulgarian text in the English version) with `langid_filter.py`
 1. Add MEPs metadata to proceedings with `add_metadata.py`
 1. Add sentence boundaries (if needed) with `add_sentences.py`
-1. Annotate token, lemma, PoS with TreeTagger with `treetagger.sh`
+1. Annotate token, lemma, PoS with TreeTagger with `treetagger.py`
 1. Separate originals from translations and even filter by native speakers with `translationese_filter.py`
 
 ## `add_metadata.py`
+
+### What
+
+It adds MEPs' metadata to interventions in the proceedings.
+Be aware that not all speakers speaking before the European Parliament are MEPs. There are members of other European Institutions, representatives of national institutions, guests, etc. speaking here. There is currently no metadata for those but the information extracted from the very same proceedings.
+
+### How
+
+It reads 3 files containing the metadata:
+
+- `meps.csv` which contains basic information about the MEP: id, name, nationality, birth date, birth place, death date, death place.
+- `national_parties.csv` which contains political affiliation of the MEP in his/her country: id, start date, end date, and name of the party.
+- `political_groups.csv` which contains political affiliation at the European Parliament: id, Member State, start date, end date, name of the group, role within the group.
+
+For each proceeding in XML it retrieves all interventions whose speaker is an MEP. Then it adds relevant speaker's metadata to the intervention. By relevant we mean the valid information at the day of the session.
 
 ### Requirements
 
@@ -46,6 +68,16 @@ You can find the complete pipeline to compile the EuroParl corpus in `compile.sh
 
 ## `add_sentences.py`
 
+### What
+
+It splits text contained in a given XML element into sentences.
+
+### How
+
+Using NLTK Punkt Tokenizer.
+
+For each XML file, extracts all elements containing text. Each unit is passed to the tokenizer. It returns a list of sentences, which are converted in subelements of the element which was containing the text.
+
 ### Requirements
 
 - Python 3
@@ -54,11 +86,31 @@ You can find the complete pipeline to compile the EuroParl corpus in `compile.sh
 
 ## `compile.sh`
 
+### What
+
+It runs the whole pipeline in one shot.
+
+### How
+
+It is a shell script running a list of commands sequentially. If no arguments provided it runs the full pipeline for all the supported languages.
+
+One can provide the `-l` language argument, to run the pipeline only on a particular language, and `-p` pattern argument, to restrict the processing to a year, month, day...
+
 ### Requirements
 
 All the requirements listed in this section and a bash shell.
 
 ## `get_meps.py`
+
+### What
+
+It downloads the MEPs' information avaliable at the web of the European Parliament in HTML format.
+
+### How
+
+First, it gets a list of all MEPs (past and present).
+
+For each item in this list, it generates an URL and it downloads the page which contains basic information and the history record of the speaker.
 
 ### Requirements
 
@@ -68,12 +120,36 @@ All the requirements listed in this section and a bash shell.
 
 ## `get_proceedings.py`
 
+### What
+
+It downloads all the proceedings in a particular language version within a range of dates.
+
+### How
+
+If a file with dates is given it generates an URL for each date and downloads the proceedings in HTML format. If no file with dates is provided, it generates all possible dates within a range, and tries to download only those URLs returning a sucessful response.
+
 ### Requirements
 
 - Python 3
 - requests
 
 ## `langid_filter.py`
+
+### What
+
+Sometimes, interventions remain untranslated and thus their text appear in their original language. In order to avoid this noise, `langid_filter.py` identifies the most probable language of each text unit (namely paragraphs) and remove those paragraphs which are not in the expected language (e.g. Bulgarian fragments found in the English version).
+
+### How
+
+All paragraphs (or units containing the text to be analyzed) are retrieved.
+
+Each unit is analyzed with to language identifiers available for Python: `langdetect` and `langid`. A series of heuristics are then used to exploit the output of the language analyzers:
+
+If the expected language and the language identified by both tools is the same, the text is in the same language as the language of the version at stake.
+
+If both tools agree in identifying the language which is different to the expected version, the text is in a different language as the expected one, and, thus, removed.
+
+For cases where there is not a perfect agreement a few rules are formalized working fairly well.
 
 ### Requirements
 
@@ -84,6 +160,18 @@ All the requirements listed in this section and a bash shell.
 
 ## `meps_ie.py`
 
+### What
+
+It extracts MEPs information from semistructured HTML and yields the information in tabular format.
+
+### How
+
+It reads each HTML instance, and using XPath and regular expressions it finds relevant information which is finally serialized as three CSV files:
+
+- `meps.csv`
+- `national_parties.csv`
+- `political_groups.csv`
+
 ### Requirements
 
 - Python 3
@@ -91,6 +179,36 @@ All the requirements listed in this section and a bash shell.
 - pandas
 
 ## `proceedings_xml.py`
+
+### What
+
+It extracts basic metadata about the parliamentary session, the structure of the text, and about the speakers and the source language of the utterances, and the actual text of the proceedings.
+
+- text: a session of parliamentary debates, it contains one or more sections.
+    - id: YYYYMMDD.XX, date and language
+    - lang: 2-letter ISO code for the language version
+    - date: YYYY-MM-DD
+    - place
+    - edition
+- section: an agenda item
+    - id: ID as in the HTML for reference
+    - title: CDATA, text of the heading/headline.
+- intervention
+    - id: ID as in the HTML for reference
+    - speaker_id: if MEMP unique  code
+    - name
+    - is_mep: True or False
+    - mode: spoken, written
+    - role: function  of the speaker at the moment of speaking
+- p: paragraphs
+    - sl: Source Language
+    - PCDATA: actual text
+- a: annotations
+    - text: CDATA
+
+### How
+
+It reads each HTML file, and using XPath and regular expressions it maintains the structure of the debates, and extracts metatextual information about the SL, the speaker, etc.
 
 ### Requirements
 
@@ -101,6 +219,14 @@ All the requirements listed in this section and a bash shell.
 
 ## `proceedings_txt.py`
 
+### What
+
+It extracts all the text in the HTML proceedings.
+
+### How
+
+It parses the HTML, extracts only text, and clean a bit the output.
+
 ### Requirements
 
 - Python 3
@@ -108,21 +234,47 @@ All the requirements listed in this section and a bash shell.
 
 ## `translationse_filter.py`
 
+### What
+
+It filters out interventions to get:
+
+- only originals
+- all translations
+- the translations of a particular SL
+
+### How
+
+It reads proceedings in XML and outputs XML with only the relevant paragraphs and their corresponding ancestors.
+
+If native speakers (defined here as someone holding the nationality of a country with the SL as official language), XML with MEPs metadata is required.
+
+It ritrieves all intervention and filters out interventions to keep only:
+
+1. originals: if `sl` == `lang`
+2. translations: if `sl` != `lang` and `sl` != unknown
+3. translations from language xx
+
 ### Requirements
 
 - Python 3
 - lxml
 
-## `treetagger.sh`
+## `treetagger.py`
+
+### What
+
+It tokenizes, lemmatizes, tags PoS and splits into sentences a text.
+
+### How
+
+It reads an XML file and annotates the text contained in a given element. It cares of producing well-formed XML as output.
 
 ### Requirements
 
+- nltk (if tagging sentences is required)
+- treetaggerwrapper
 - TreeTagger
-- Language parameters:
-    - English
-    - Spanish
-    - German
-- sed
+- language parameters
 
 ## Scrapping European Parliament's proceedings
 
