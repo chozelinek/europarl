@@ -89,7 +89,7 @@ class GetProceedings(object):
         parser.add_argument(
             "-l", "--language",
             required=True,
-            choices=['EN', 'ES', 'DE', 'FR', 'IT'],
+            choices=['en', 'es', 'de', 'fr', 'it'],
             help="version to be downloaded.")
         parser.add_argument(
             '-s', "--startdate",
@@ -113,7 +113,7 @@ class GetProceedings(object):
         self.outdir = args.output
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
-        self.language = args.language
+        self.language = args.language.upper()
         self.start_date = args.startdate
         self.end_date = args.enddate
         self.dates = args.dates
