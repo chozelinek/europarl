@@ -171,26 +171,21 @@ class TagWithTreeTagger(object):
             tree = self.read_xml(infile)
             elements = tree.xpath('.//{}'.format(self.element))
             for e in elements:
-#                 print(etree.tostring(e).decode())
                 if self.sentence:
                     sentences = self.get_sentences(e)
                     for s in sentences:
-#                         print(s)
-                        tags = self.tagger.tag_text(html.unescape(s))
+                        if self.tokenize:
+                            tags = self.tagger.tag_text(html.unescape(s))
+                        else:
+                            tags = self.tagger.tag_text(html.unescape(s), tagonly=True)
                         etree.SubElement(e, 's').text = '\n'.join(tags)
                 else:
-                    tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()))
-#                     tags = '\n'.join(tags)
-#                     print(tags)
-#                     tags = [x.encode('utf-8') for x in tags]
-#                     tags = [html.escape(x).encode('utf-8') if not re.match(r'<', x) else x.encode('utf-8') for x in tags]
-#                     print(tags)
+                    if self.tokenize:
+                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()))
+                    else:
+                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()), tagonly=True)
                     tags = self.escape(tags)   
-#                     tags = [html.escape(x).encode('ascii', 'xmlcharrefreplace') if type(x) is 'str' else x for x in tags]
-#                     tags = [x.encode('utf-8') for x in tags]
-#                     print(tags)
                     tags = '\n'.join(tags)
-#                     print(tags)
                     xml = etree.fromstring(tags)
                     e.getparent().replace(e, xml)
             self.serialize(infile, tree)
@@ -229,6 +224,12 @@ class TagWithTreeTagger(object):
             default=False,
             action="store_true",
             help="if provided, it splits text in sentences.")
+        parser.add_argument(
+            "--tokenize",
+            required=False,
+            default=False,
+            action="store_true",
+            help="if provided, it tokenizes the text, else, it expects one token per line.")
         args = parser.parse_args()
         self.indir = args.input
         self.outdir = args.output
@@ -238,6 +239,7 @@ class TagWithTreeTagger(object):
         self.element = args.element
         self.pattern = args.pattern
         self.sentence = args.sentence
+        self.tokenize = args.tokenize
         pass
 
 
