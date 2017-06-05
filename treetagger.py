@@ -118,7 +118,7 @@ class TagWithTreeTagger(object):
         root -- Element to be serialized as XML.
         """
         ofile_name = os.path.splitext(os.path.basename(infile))[0]
-        ofile_path = os.path.join(self.outdir, ofile_name+'.xml')
+        ofile_path = os.path.join(self.outdir, ofile_name+'.vrt')
         xml = self.unprettify(root)
         with open(ofile_path, mode='w', encoding='utf-8') as ofile:
             ofile.write(xml)
