@@ -175,15 +175,25 @@ class TagWithTreeTagger(object):
                     sentences = self.get_sentences(e)
                     for s in sentences:
                         if self.tokenize:
-                            tags = self.tagger.tag_text(html.unescape(s))
+                            tags = self.tagger.tag_text(html.unescape(s), notagdns=True, notagip=True, notagurl=True, notagemail=True)
                         else:
-                            tags = self.tagger.tag_text(html.unescape(s), tagonly=True)
-                        etree.SubElement(e, 's').text = '\n'.join(tags)
+                            tags = self.tagger.tag_text(html.unescape(s), notagdns=True, notagip=True, notagurl=True, notagemail=True, tagonly=True)
+                        tags = self.escape(tags)   
+                        xml = etree.SubElement(e, 's')
+                        for tag in tags:
+                            try:
+                                xml.append(etree.fromstring(tag))
+                            except:
+                                dummy_token = etree.Element('dummy')
+                                dummy_token.text = '\n{}\n'.format(tag)
+                                xml.append(dummy_token)
+                        etree.strip_tags(xml, 'dummy')
+                        
                 else:
                     if self.tokenize:
-                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()))
+                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()), notagdns=True, notagip=True, notagurl=True, notagemail=True)
                     else:
-                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()), tagonly=True)
+                        tags = self.tagger.tag_text(html.unescape(etree.tostring(e, encoding='utf-8').decode()), notagdns=True, notagip=True, notagurl=True, notagemail=True, tagonly=True)
                     tags = self.escape(tags)   
                     tags = '\n'.join(tags)
                     xml = etree.fromstring(tags)
