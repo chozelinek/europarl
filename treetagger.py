@@ -152,18 +152,27 @@ class TagWithTreeTagger(object):
     def escape(self, tags):
         output = []
         for tag in tags:
-            if not re.match(r'<', tag):
+            if re.match(r'<.+ >$', tag):
+                try:
+                    etree.fromstring(tag)
+                    output.append(tag)
+                except:
+                    tag = re.sub(r'(<)(.+) (>)', r'\1\n\2\n\3', tag)
+                    tag = self.tagger.tag_text(tag, notagdns=True, notagip=True, notagurl=True, notagemail=True, tagonly=True)
+                    tag = [html.escape(t) for t in tag]
+                    output += tag
+            elif not re.match(r'<.+>$', tag):
                 output.append(html.escape(tag))
             else:
                 test = re.match(r'<rep(.+?) text="(.+)"', tag)
                 if test is not None:
-                    output.append('<rep{} text="{}" />'.format(test.group(1), html.escape(test.group(2))))
+                    output.append('<rep{} text="{}"/>'.format(test.group(1), html.escape(test.group(2))))
                 else:
                     if re.match(r'[<>]\t', tag):
                         output.append(html.escape(tag))
                     else:
                         output.append(tag)
-        return output
+        return output    
 
     def main(self):
         for infile in self.infiles:
