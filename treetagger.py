@@ -33,15 +33,15 @@ class TagWithTreeTagger(object):
     def __init__(self):
         self.cli()
         self.infiles = self.get_files(self.indir, self.pattern)
-        self.n_proceedings = 0
+        self.counter = 0
         self.loc = self.get_localized_vars()
         self.tokenizer = self.init_tokenizer()
         self.tagger = self.init_tagger()
         self.main()
 
     def __str__(self):
-        message = "{} EuroParl's {} proceedings tagged!".format(
-            str(self.n_proceedings),
+        message = "{} files in '{}' tagged!".format(
+            str(self.counter),
             self.language)
         return message
 
@@ -189,7 +189,7 @@ class TagWithTreeTagger(object):
                     xml = etree.fromstring(tags)
                     e.getparent().replace(e, xml)
             self.serialize(infile, tree)
-            self.n_proceedings += 1
+            self.counter += 1
         pass
 
     def cli(self):
