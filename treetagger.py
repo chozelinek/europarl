@@ -61,7 +61,7 @@ class TagWithTreeTagger(object):
     def get_localized_vars(self):
         """Import localized variables from JSON file."""
         fname = self.language+".json"
-        fpath = os.path.join('localization', fname)
+        fpath = os.path.join(os.path.split(os.path.realpath(__file__))[0], 'localization', fname)
         with open(fpath, mode="r", encoding="utf-8") as jfile:
             content = jfile.read()
         vars = json.loads(content)
