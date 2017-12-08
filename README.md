@@ -10,6 +10,7 @@ Related projects:
 - [CoStEP](http://pub.cl.uzh.ch/purl/costep): Corrected & Structured Europarl Corpus
 - [Koehn's EuroParl](http://www.statmt.org/europarl): European Parliament Proceedings Parallel Corpus
 - [ECPC](http://www.ecpc.uji.es): European Comparable and Parallel Corpora
+- [DCEP](https://ec.europa.eu/jrc/en/language-technologies/dcep): Digital Corpus of the European Parliament
 
 ## Contents
 
