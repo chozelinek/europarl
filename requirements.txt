@@ -1,0 +1,9 @@
+requests
+lxml
+pandas
+nltk
+regex
+dateparser
+treetaggerwrapper
+langdetect
+langid
