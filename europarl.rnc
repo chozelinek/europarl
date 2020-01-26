@@ -1,0 +1,116 @@
+element text {
+	attribute id { xsd:string },
+	attribute lang { "en" | "es" },
+	attribute date { xsd:date },
+	attribute place { "Strasbourg" | "Brussels" | "Estrasburgo" | "Bruselas" },
+	attribute edition {"OJ edition" | "Edición DO"},	
+	element section {
+		attribute id { xsd:string } ,
+		attribute title { xsd:string },
+		element intervention {
+			attribute id { xsd:string },
+			attribute speaker_id { xsd:integer | "photo_generic" }, 
+			attribute is_mep { "True" | "False" }, # xsd:boolean
+			attribute mode { "spoken" | "written" },
+			attribute role { xsd:string } ?,
+			attribute name { xsd:string },
+			attribute nationality { 
+				"United Kingdom" |
+				"France" |
+				"Germany" |
+				"Portugal" |
+				"Spain" |
+				"Italy" |
+				"Poland" |
+				"Netherlands" |
+				"Austria" |
+				"Ireland" |
+				"Greece" |
+				"Romania" |
+				"Belgium" |
+				"Sweden" |
+				"Finland" |
+				"Lithuania" |
+				"Hungary" |
+				"Czech Republic" |
+				"Slovakia" |
+				"Denmark" |
+				"Luxembourg" |
+				"Estonia" |
+				"Cyprus" |
+				"Bulgaria" |
+				"Latvia" |
+				"Malta" |
+				"Slovenia"
+			} ?,
+			attribute birth_date { xsd:date } ?,
+			attribute birth_place { xsd:string } ?,
+			attribute n_party { xsd:string } ?,
+			attribute p_group { xsd:string } ?,
+			attribute m_state {
+				"GB" |
+				"FR" |
+				"DE" |
+				"PT" |
+				"ES" |
+				"IT" |
+				"PL" |
+				"NL" |
+				"AT" |
+				"IE" |
+				"GR" |
+				"RO" |
+				"BE" |
+				"SE" |
+				"FI" |
+				"LT" |
+				"HU" |
+				"CZ" |
+				"SK" |
+				"DK" |
+				"LU" |
+				"EE" |
+				"CY" |
+				"BG" |
+				"LV" |
+				"MT" |
+				"SI"
+			} ?,
+			(element p {
+				attribute sl {
+					"en" |
+					"de" |
+					"fr" |
+					"unknown" |
+					"es" |
+					"pt" |
+					"it" |
+					"nl" |
+					"el" |
+					"sv" |
+					"pl" |
+					"fi" |
+					"ro" |
+					"hu" |
+					"da" |
+					"cs" |
+					"sk" |
+					"lt" |
+					"sl" |
+					"bg" |
+					"et" |
+					"ga" |
+					"lv" |
+					"mt"
+				},
+				element s {
+					text
+				} +
+			} * &
+			element a {
+				attribute text { xsd:string },
+				empty
+			} * ) +
+		} +
+	} +
+}
